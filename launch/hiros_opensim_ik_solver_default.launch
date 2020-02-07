@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="node_required"                default="false"      />
+  <arg name="node_name"                    default="opensim_ik" />
+
+  <!-- General Parameters -->
+  <arg name="input_topic"                  default=""           />
+  <arg name="sensor_to_opensim_rotation_x" default="0"          />
+  <arg name="sensor_to_opensim_rotation_y" default="0"          />
+  <arg name="sensor_to_opensim_rotation_z" default="0"          />
+
+  <!-- IMU Placer Parameters -->
+  <arg name="model_path"                 default=""      />
+  <arg name="perform_heading_correction" default="false" />
+  <arg name="base_imu_label"             default=""      />
+  <arg name="base_heading_axis"          default=""      />
+  <arg name="save_calibrated_model"      default="false" />
+  <arg name="visualize_calibration"      default="false" />
+
+  <!-- IK Tool Parameters -->
+  <arg name="accuracy"              default="1e-4"              />
+  <arg name="visualize_motion"      default="false"             />
+
+
+  <node pkg="hiros_opensim_ik_solver" type="hiros_opensim_ik_solver" name="$(arg node_name)" output="screen" required="$(arg node_required)">
+    <param name="node_name"                    type="str"    value="$(arg node_name)" />
+
+    <!-- General Parameters -->
+    <param name="input_topic"                  type="str"    value="$(arg input_topic)"                  />
+    <param name="sensor_to_opensim_rotation_x" type="double" value="$(arg sensor_to_opensim_rotation_x)" />
+    <param name="sensor_to_opensim_rotation_y" type="double" value="$(arg sensor_to_opensim_rotation_y)" />
+    <param name="sensor_to_opensim_rotation_z" type="double" value="$(arg sensor_to_opensim_rotation_z)" />
+
+    <!-- IMU Placer Parameters -->
+    <param name="model_path"                 type="str"  value="$(arg model_path)"                 />
+    <param name="perform_heading_correction" type="bool" value="$(arg perform_heading_correction)" />
+    <param name="base_imu_label"             type="str"  value="$(arg base_imu_label)"             />
+    <param name="base_heading_axis"          type="str"  value="$(arg base_heading_axis)"          />
+    <param name="save_calibrated_model"      type="bool" value="$(arg save_calibrated_model)"      />
+    <param name="visualize_calibration"      type="bool" value="$(arg visualize_calibration)"      />
+
+    <!-- IK Tool Parameters -->
+    <param name="accuracy"                     type="double" value="$(arg accuracy)"         />
+    <param name="visualize_motion"             type="bool"   value="$(arg visualize_motion)" />
+  </node>
+</launch>
