@@ -201,7 +201,7 @@ sensor_msgs::JointState hiros::opensim_ik::IKSolver::getJointStateMsg()
 
   out_msg.header.stamp = ros::Time(m_rt_imu_ik_tool->getState().getTime());
   out_msg.name = m_joint_names;
-  out_msg.position = utils::toStdVector(m_rt_imu_ik_tool->getState().getQ());
+  out_msg.position = m_rt_imu_ik_tool->getJointPositions();
 
   return out_msg;
 }

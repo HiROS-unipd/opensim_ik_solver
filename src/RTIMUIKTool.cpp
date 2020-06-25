@@ -97,6 +97,50 @@ bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK()
   return true;
 }
 
+double hiros::opensim_ik::RTIMUIKTool::getJointPosition(const std::string& t_jointName, int t_idx = -1)
+{
+  if (m_coordinate_names.findIndex(t_jointName) == -1) {
+    std::cout << "Joint " << t_jointName << " not found" << std::endl;
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+  if (t_idx == -1) {
+    t_idx = m_model->getCoordinateSet().getIndex(t_jointName);
+  }
+  return m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "value");
+}
+
+double hiros::opensim_ik::RTIMUIKTool::getJointVelocity(const std::string& t_jointName, int t_idx = -1)
+{
+  if (m_coordinate_names.findIndex(t_jointName) == -1) {
+    std::cout << "Joint " << t_jointName << " not found" << std::endl;
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+  if (t_idx == -1) {
+    t_idx = m_model->getCoordinateSet().getIndex(t_jointName);
+  }
+  return m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "speed");
+}
+
+std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointPositions()
+{
+  std::vector<double> values;
+  values.reserve(static_cast<size_t>(m_coordinate_names.size()));
+  for (int i = 0; i < m_coordinate_names.size(); ++i) {
+    values.push_back(getJointPosition(m_coordinate_names.get(i), i));
+  }
+  return values;
+}
+
+std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointVelocities()
+{
+  std::vector<double> values;
+  values.reserve(static_cast<size_t>(m_coordinate_names.size()));
+  for (int i = 0; i < m_coordinate_names.size(); ++i) {
+    values.push_back(getJointVelocity(m_coordinate_names.get(i), i));
+  }
+  return values;
+}
+
 void hiros::opensim_ik::RTIMUIKTool::initialize()
 {
   if (!m_model) {
@@ -115,6 +159,8 @@ void hiros::opensim_ik::RTIMUIKTool::initialize()
     *m_model.get(), marker_refs, *m_orientation_refs.get(), coordinate_refs);
   m_ik_solver->setAccuracy(m_accuracy);
   m_ik_solver->assemble(*m_state);
+
+  m_model->getCoordinateSet().getNames(m_coordinate_names);
 
   if (m_use_visualizer) {
     m_model->updVisualizer().updSimbodyVisualizer().setWindowTitle(m_model->getName() + " - Inverse Kinematics");
