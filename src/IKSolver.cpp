@@ -138,11 +138,10 @@ hiros::opensim_ik::IKSolver::toQuaternionsTable(const hiros_xsens_mtw_wrapper::M
   imu_labels.reserve(n_cols);
 
   for (unsigned long col = 0; col < n_cols; ++col) {
-    const SimTK::Quaternion q(t_msg.mimus.at(col).imu.orientation.w,
-                              t_msg.mimus.at(col).imu.orientation.x,
-                              t_msg.mimus.at(col).imu.orientation.y,
-                              t_msg.mimus.at(col).imu.orientation.z);
-    quaternion_matrix.updElt(0, static_cast<int>(col)) = q;
+    quaternion_matrix.updElt(0, static_cast<int>(col)) = SimTK::Quaternion(t_msg.mimus.at(col).imu.orientation.w,
+                                                                           t_msg.mimus.at(col).imu.orientation.x,
+                                                                           t_msg.mimus.at(col).imu.orientation.y,
+                                                                           t_msg.mimus.at(col).imu.orientation.z);
     imu_labels.push_back(t_msg.mimus.at(col).imu.header.frame_id);
   }
 
@@ -167,11 +166,11 @@ hiros::opensim_ik::IKSolver::toRotationsTable(const hiros_xsens_mtw_wrapper::MIM
   imu_labels.reserve(n_cols);
 
   for (unsigned long col = 0; col < n_cols; ++col) {
-    const SimTK::Quaternion q(t_msg.mimus.at(col).imu.orientation.w,
-                              t_msg.mimus.at(col).imu.orientation.x,
-                              t_msg.mimus.at(col).imu.orientation.y,
-                              t_msg.mimus.at(col).imu.orientation.z);
-    rotation_matrix.updElt(0, static_cast<int>(col)) = SimTK::Rotation(q);
+    rotation_matrix.updElt(0, static_cast<int>(col)) =
+      SimTK::Rotation(SimTK::Quaternion(t_msg.mimus.at(col).imu.orientation.w,
+                                        t_msg.mimus.at(col).imu.orientation.x,
+                                        t_msg.mimus.at(col).imu.orientation.y,
+                                        t_msg.mimus.at(col).imu.orientation.z));
     imu_labels.push_back(t_msg.mimus.at(col).imu.header.frame_id);
   }
 
