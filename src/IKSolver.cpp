@@ -5,7 +5,7 @@ hiros::opensim_ik::IKSolver::IKSolver()
   : m_configured(false)
   , m_nh("~")
   , m_node_namespace(m_nh.getNamespace())
-  , m_new_msg(false)
+  , m_calibrated(false)
 {}
 
 void hiros::opensim_ik::IKSolver::start()
@@ -15,23 +15,13 @@ void hiros::opensim_ik::IKSolver::start()
   getRosParams();
   setupRos();
   initializeIMUPlacer();
-  calibrateIMUs();
-  initializeIKTool();
-  initializeJointStateNames();
 }
 
 void hiros::opensim_ik::IKSolver::run()
 {
   ROS_INFO_STREAM(BASH_MSG_GREEN << "OpenSim IK Solver... RUNNING" << BASH_MSG_RESET);
 
-  while (ros::ok()) {
-    if (m_new_msg) {
-      m_rt_imu_ik_tool->runSingleFrameIK(toRotationsTable(m_mimu_array_msg));
-      m_joint_states_pub.publish(getJointStateMsg());
-      m_new_msg = false;
-    }
-    ros::spinOnce();
-  }
+  ros::spin();
 }
 
 void hiros::opensim_ik::IKSolver::getRosParams()
@@ -89,20 +79,11 @@ void hiros::opensim_ik::IKSolver::initializeIMUPlacer()
   }
 }
 
-void hiros::opensim_ik::IKSolver::calibrateIMUs()
+void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg)
 {
   ROS_INFO_STREAM("OpenSim IK Solver... Placing IMUs on model");
 
-  bool calibrated = false;
-
-  while (!calibrated && ros::ok()) {
-    if (m_new_msg) {
-      m_rt_imu_placer->runCalibration(toQuaternionsTable(m_mimu_array_msg));
-      m_new_msg = false;
-      calibrated = true;
-    }
-    ros::spinOnce();
-  }
+  m_rt_imu_placer->runCalibration(toQuaternionsTable(t_msg));
 
   m_model = m_rt_imu_placer->getCalibratedModel();
   m_model.finalizeFromProperties();
@@ -116,6 +97,8 @@ void hiros::opensim_ik::IKSolver::calibrateIMUs()
     ROS_INFO_STREAM("OpenSim IK Solver... Saving calibrated model to " << calibrated_model_path);
     m_model.print(calibrated_model_path);
   }
+
+  m_calibrated = true;
 
   ROS_INFO_STREAM(BASH_MSG_GREEN << "OpenSim IK Solver... CALIBRATED" << BASH_MSG_RESET);
 }
@@ -208,6 +191,13 @@ sensor_msgs::JointState hiros::opensim_ik::IKSolver::getJointStateMsg()
 
 void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg)
 {
-  m_new_msg = true;
-  m_mimu_array_msg = t_msg;
+  if (!m_calibrated) {
+    calibrateIMUs(t_msg);
+    initializeIKTool();
+    initializeJointStateNames();
+  }
+  else {
+    m_rt_imu_ik_tool->runSingleFrameIK(toRotationsTable(t_msg));
+    m_joint_states_pub.publish(getJointStateMsg());
+  }
 }

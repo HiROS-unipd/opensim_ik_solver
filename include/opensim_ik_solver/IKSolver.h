@@ -54,7 +54,7 @@ namespace hiros {
       void getRosParams();
       void setupRos();
       void initializeIMUPlacer();
-      void calibrateIMUs();
+      void calibrateIMUs(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg);
       void initializeIKTool();
       void initializeJointStateNames();
 
@@ -83,8 +83,7 @@ namespace hiros {
       ros::Subscriber m_orientations_sub;
       ros::Publisher m_joint_states_pub;
 
-      hiros_xsens_mtw_wrapper::MIMUArray m_mimu_array_msg;
-      bool m_new_msg;
+      bool m_calibrated;
     };
 
   } // namespace opensim_ik
