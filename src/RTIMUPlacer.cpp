@@ -37,6 +37,11 @@ void hiros::opensim_ik::RTIMUPlacer::enableVisualizer()
   m_use_visualizer = true;
 }
 
+void hiros::opensim_ik::RTIMUPlacer::disableVisualizer()
+{
+  m_use_visualizer = false;
+}
+
 bool hiros::opensim_ik::RTIMUPlacer::runCalibration(
   const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table)
 {

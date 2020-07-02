@@ -19,6 +19,7 @@ namespace hiros {
       void setModel(const OpenSim::Model& t_model);
       void performHeadingCorrection(const std::string& t_base_imu_label, const std::string& t_base_heading_axis);
       void enableVisualizer();
+      void disableVisualizer();
 
       bool runCalibration(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table);
 
