@@ -28,6 +28,7 @@ namespace hiros {
     struct IMUPlacerParameters
     {
       std::string model_path;
+      bool perform_model_calibration;
       bool perform_heading_correction;
       std::string base_imu_label;
       std::string base_heading_axis;
@@ -54,6 +55,7 @@ namespace hiros {
       void getRosParams();
       void setupRos();
       void initializeIMUPlacer();
+      void initializeModel();
       void calibrateIMUs(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg);
       void initializeIKTool();
       void initializeJointStateNames();
@@ -83,7 +85,7 @@ namespace hiros {
       ros::Subscriber m_orientations_sub;
       ros::Publisher m_joint_states_pub;
 
-      bool m_calibrated;
+      bool m_initialized;
     };
 
   } // namespace opensim_ik

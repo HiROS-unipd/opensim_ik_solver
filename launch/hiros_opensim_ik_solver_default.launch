@@ -12,6 +12,7 @@
 
   <!-- IMU Placer Parameters -->
   <arg name="model_path"                 default=""      />
+  <arg name="perform_model_calibration"  default="true"  />
   <arg name="perform_heading_correction" default="false" />
   <arg name="base_imu_label"             default=""      />
   <arg name="base_heading_axis"          default=""      />
@@ -34,6 +35,7 @@
 
     <!-- IMU Placer Parameters -->
     <param name="model_path"                 type="str"  value="$(arg model_path)"                 />
+    <param name="perform_model_calibration"  type="bool" value="$(arg perform_model_calibration)"  />
     <param name="perform_heading_correction" type="bool" value="$(arg perform_heading_correction)" />
     <param name="base_imu_label"             type="str"  value="$(arg base_imu_label)"             />
     <param name="base_heading_axis"          type="str"  value="$(arg base_heading_axis)"          />

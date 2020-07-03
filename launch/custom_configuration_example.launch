@@ -13,6 +13,7 @@
 
     <!-- IMU Placer Parameters -->
     <arg name="model_path"                 value="$(find hiros_opensim_ik_solver)/models/Rajagopal2015_edited.osim" />
+    <arg name="perform_model_calibration"  value="true"       />
     <arg name="perform_heading_correction" value="true"       />
     <arg name="base_imu_label"             value="pelvis_imu" />
     <arg name="base_heading_axis"          value="z"          />

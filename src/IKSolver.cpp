@@ -5,7 +5,7 @@ hiros::opensim_ik::IKSolver::IKSolver()
   : m_configured(false)
   , m_nh("~")
   , m_node_namespace(m_nh.getNamespace())
-  , m_calibrated(false)
+  , m_initialized(false)
 {}
 
 void hiros::opensim_ik::IKSolver::start()
@@ -42,6 +42,7 @@ void hiros::opensim_ik::IKSolver::getRosParams()
                                                        SimTK::ZAxis);
 
   m_nh.getParam("model_path", m_imu_placer_params.model_path);
+  m_nh.getParam("perform_model_calibration", m_imu_placer_params.perform_model_calibration);
   m_nh.getParam("perform_heading_correction", m_imu_placer_params.perform_heading_correction);
   m_nh.getParam("base_imu_label", m_imu_placer_params.base_imu_label);
   m_nh.getParam("base_heading_axis", m_imu_placer_params.base_heading_axis);
@@ -79,6 +80,12 @@ void hiros::opensim_ik::IKSolver::initializeIMUPlacer()
   }
 }
 
+void hiros::opensim_ik::IKSolver::initializeModel()
+{
+  m_model = OpenSim::Model(m_imu_placer_params.model_path);
+  m_model.finalizeFromProperties();
+}
+
 void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg)
 {
   ROS_INFO_STREAM("OpenSim IK Solver... Placing IMUs on model");
@@ -97,8 +104,6 @@ void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_xsens_mtw_wrapper::M
     ROS_INFO_STREAM("OpenSim IK Solver... Saving calibrated model to " << calibrated_model_path);
     m_model.print(calibrated_model_path);
   }
-
-  m_calibrated = true;
 
   ROS_INFO_STREAM(BASH_MSG_GREEN << "OpenSim IK Solver... CALIBRATED" << BASH_MSG_RESET);
 }
@@ -190,10 +195,18 @@ sensor_msgs::JointState hiros::opensim_ik::IKSolver::getJointStateMsg()
 
 void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg)
 {
-  if (!m_calibrated) {
-    calibrateIMUs(t_msg);
+  if (!m_initialized) {
+    if (m_imu_placer_params.perform_model_calibration) {
+      calibrateIMUs(t_msg);
+    }
+    else {
+      initializeModel();
+    }
+
     initializeIKTool();
     initializeJointStateNames();
+
+    m_initialized = true;
   }
   else {
     m_rt_imu_ik_tool->runSingleFrameIK(toRotationsTable(t_msg));
