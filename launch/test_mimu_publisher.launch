@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <!-- OpenSim IK Solver -->
+  <include file="$(find hiros_opensim_ik_solver)/launch/hiros_opensim_ik_solver_default.launch">
+    <arg name="node_required" value="false"    />
+    <arg name="node_name"     value="opensim" />
+
+    <!-- General Parameters -->
+    <arg name="input_topic"                  value="/xsens/data" />
+    <arg name="sensor_to_opensim_rotation_x" value="-1.5707963"  />
+    <arg name="sensor_to_opensim_rotation_y" value="1.5707963"   />
+    <arg name="sensor_to_opensim_rotation_z" value="0"           />
+
+    <!-- IMU Placer Parameters -->
+    <arg name="model_path"                 value="$(find hiros_opensim_ik_solver)/models/Rajagopal2015_edited.osim" />
+    <arg name="perform_model_calibration"  value="true"       />
+    <arg name="perform_heading_correction" value="true"       />
+    <arg name="base_imu_label"             value="pelvis_imu" />
+    <arg name="base_heading_axis"          value="x"          />
+    <arg name="save_calibrated_model"      value="true"       />
+    <arg name="visualize_calibration"      value="false"      />
+
+    <!-- IK Tool Parameters -->
+    <arg name="accuracy"         value="1e-4" />
+    <arg name="visualize_motion" value="true" />
+  </include>
+
+
+  <!-- MIMU Publisher -->
+  <include file="$(find mimu_publisher)/launch/mimu_publisher.launch">
+    <arg name="node_required" value="true"     />
+    <arg name="node_name"     value="mimu_pub" />
+
+    <arg name="imu_labels"    value="[pelvis_imu,tibia_r_imu,femur_r_imu]" />
+    <arg name="output_topic"  value="/xsens/data"                          />
+    <arg name="rate"          value="100"                                  />
+  </include>
+
+</launch>
