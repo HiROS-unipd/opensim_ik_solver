@@ -5,6 +5,7 @@
   <arg name="node_name"                    default="opensim_ik" />
 
   <!-- General Parameters -->
+  <arg name="n_threads"                    default="4"          />
   <arg name="input_topic"                  default=""           />
   <arg name="sensor_to_opensim_rotation_x" default="0"          />
   <arg name="sensor_to_opensim_rotation_y" default="0"          />
@@ -28,6 +29,7 @@
     <param name="node_name"                    type="str"    value="$(arg node_name)" />
 
     <!-- General Parameters -->
+    <param name="n_threads"                    type="int"    value="$(arg n_threads)"                    />
     <param name="input_topic"                  type="str"    value="$(arg input_topic)"                  />
     <param name="sensor_to_opensim_rotation_x" type="double" value="$(arg sensor_to_opensim_rotation_x)" />
     <param name="sensor_to_opensim_rotation_y" type="double" value="$(arg sensor_to_opensim_rotation_y)" />

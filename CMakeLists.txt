@@ -81,7 +81,9 @@ add_custom_target(additional_files_${PROJECT_NAME} SOURCES ${FILES_LIST})
 add_executable(${PROJECT_NAME}_node src/main.cpp
                                     src/IKSolver.cpp
                                     src/RTIMUIKTool.cpp
-                                    src/RTIMUPlacer.cpp)
+                                    src/RTIMUPlacer.cpp
+                                    src/Consumer.cpp
+                                    src/Publisher.cpp)
 
 # Rename C++ executable without prefix The above recommended prefix causes long
 # target names, the following renames the target back to the shorter version for

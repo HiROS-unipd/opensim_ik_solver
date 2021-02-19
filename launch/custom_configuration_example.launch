@@ -6,6 +6,7 @@
     <arg name="node_name"     value="opensim" />
 
     <!-- General Parameters -->
+    <arg name="n_threads"                    value="8"           />
     <arg name="input_topic"                  value="/xsens/data" />
     <arg name="sensor_to_opensim_rotation_x" value="-1.5707963"  />
     <arg name="sensor_to_opensim_rotation_y" value="0"           />

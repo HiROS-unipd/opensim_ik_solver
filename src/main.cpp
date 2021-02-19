@@ -3,6 +3,10 @@
 
 // Internal dependencies
 #include "opensim_ik_solver/IKSolver.h"
+#include "opensim_ik_solver/Queue.h"
+
+extern Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
+Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
 
 int main(int argc, char* argv[])
 {

@@ -100,6 +100,13 @@ bool hiros::opensim_ik::RTIMUPlacer::runCalibration()
     initialize();
   }
 
+  // TODO: check if works
+  m_state = std::make_unique<SimTK::State>(m_model->initSystem());
+  m_state->updTime() = m_orientations_table->getIndependentColumn().front();
+
+  // Default pose of the model
+  m_model->realizePosition(*m_state.get());
+
   if (m_perform_heading_correction) {
     applyHeadingCorrection();
   }
@@ -114,12 +121,6 @@ bool hiros::opensim_ik::RTIMUPlacer::runCalibration()
   else {
     m_rotations = m_orientations_data.averageRow(m_times.front(), m_times.back());
   }
-
-  m_state = std::make_unique<SimTK::State>(m_model->initSystem());
-  m_state->updTime() = m_orientations_table->getIndependentColumn().front();
-
-  // Default pose of the model
-  m_model->realizePosition(*m_state.get());
 
   // Compute the transform of each of the IMU bodies in ground
   computeTransforms();
@@ -153,7 +154,7 @@ void hiros::opensim_ik::RTIMUPlacer::applyHeadingCorrection()
 {
   // Compute the rotation matrix so that (e.g. "pelvis_imu" + SimTK::ZAxis) lines up with model forward (+X)
   SimTK::Vec3 heading_rotation_vec = OpenSim::OpenSenseUtilities::computeHeadingCorrection(
-    *m_model.get(), *m_orientations_table.get(), m_base_imu_label, m_direction_on_imu);
+    *m_model.get(), *m_state.get(), *m_orientations_table.get(), m_base_imu_label, m_direction_on_imu);
 
   SimTK::Rotation heading_rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
                                    heading_rotation_vec[0],

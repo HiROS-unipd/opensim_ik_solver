@@ -1,5 +1,7 @@
 // Internal dependencies
 #include "opensim_ik_solver/IKSolver.h"
+#include "opensim_ik_solver/Consumer.h"
+#include "opensim_ik_solver/Publisher.h"
 
 hiros::opensim_ik::IKSolver::IKSolver()
   : m_configured(false)
@@ -28,6 +30,7 @@ void hiros::opensim_ik::IKSolver::getRosParams()
 {
   ROS_DEBUG_STREAM("OpenSim IK Solver... Configuring Solver");
 
+  m_nh.getParam("n_threads", m_general_params.n_threads);
   m_nh.getParam("input_topic", m_general_params.input_topic);
   double sensor_to_opensim_x, sensor_to_opensim_y, sensor_to_opensim_z;
   m_nh.getParam("sensor_to_opensim_rotation_x", sensor_to_opensim_x);
@@ -62,7 +65,7 @@ void hiros::opensim_ik::IKSolver::setupRos()
     ROS_WARN_STREAM_DELAYED_THROTTLE(10, "OpenSim IK Solver... No input messages on " << m_general_params.input_topic);
   }
 
-  m_joint_states_pub = m_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
+  //  m_joint_states_pub = m_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
 }
 
 void hiros::opensim_ik::IKSolver::initializeIMUPlacer()
@@ -84,6 +87,17 @@ void hiros::opensim_ik::IKSolver::initializeModel()
 {
   m_model = OpenSim::Model(m_imu_placer_params.model_path);
   m_model.finalizeFromProperties();
+}
+
+void hiros::opensim_ik::IKSolver::initializeThreads()
+{
+  for (int i = 0; i < m_general_params.n_threads; ++i) {
+    std::thread consumer(&hiros::opensim_ik::IKSolver::startConsumer, this);
+    consumer.detach();
+  }
+
+  std::thread publisher(&hiros::opensim_ik::IKSolver::startPublisher, this);
+  publisher.detach();
 }
 
 void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg)
@@ -122,6 +136,22 @@ void hiros::opensim_ik::IKSolver::initializeJointStateNames()
 {
   for (auto& coord : m_model.getComponentList<OpenSim::Coordinate>()) {
     m_joint_names.push_back(coord.getName());
+  }
+}
+
+void hiros::opensim_ik::IKSolver::startConsumer()
+{
+  Consumer c{m_model, m_imu_ik_tool_params.accuracy, m_general_params.sensor_to_opensim, m_joint_names};
+  while (ros::ok()) {
+    c.runSingleFrameIK();
+  }
+}
+
+void hiros::opensim_ik::IKSolver::startPublisher()
+{
+  Publisher p(m_nh);
+  while (ros::ok()) {
+    p.publish();
   }
 }
 
@@ -205,11 +235,13 @@ void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_xsens_mtw_wra
 
     initializeIKTool();
     initializeJointStateNames();
+    initializeThreads();
 
     m_initialized = true;
   }
   else {
-    m_rt_imu_ik_tool->runSingleFrameIK(toRotationsTable(t_msg));
-    m_joint_states_pub.publish(getJointStateMsg());
+    queue.push(toRotationsTable(t_msg));
+    //    m_rt_imu_ik_tool->runSingleFrameIK(toRotationsTable(t_msg));
+    //    m_joint_states_pub.publish(getJointStateMsg());
   }
 }

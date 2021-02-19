@@ -9,6 +9,7 @@
 #include "hiros_xsens_mtw_wrapper/MIMUArray.h"
 
 // Internal dependencies
+#include "opensim_ik_solver/Queue.h"
 #include "opensim_ik_solver/RTIMUIKTool.h"
 #include "opensim_ik_solver/RTIMUPlacer.h"
 #include "opensim_ik_solver/utils.h"
@@ -16,11 +17,14 @@
 #define BASH_MSG_RESET "\033[0m"
 #define BASH_MSG_GREEN "\033[32m"
 
+extern Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
+
 namespace hiros {
   namespace opensim_ik {
 
     struct GeneralParameters
     {
+      int n_threads;
       std::string input_topic;
       SimTK::Rotation sensor_to_opensim;
     };
@@ -56,9 +60,13 @@ namespace hiros {
       void setupRos();
       void initializeIMUPlacer();
       void initializeModel();
+      void initializeThreads();
       void calibrateIMUs(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg);
       void initializeIKTool();
       void initializeJointStateNames();
+
+      void startConsumer();
+      void startPublisher();
 
       sensor_msgs::JointState getJointStateMsg();
 
@@ -83,7 +91,7 @@ namespace hiros {
       std::vector<std::string> m_joint_names;
 
       ros::Subscriber m_orientations_sub;
-      ros::Publisher m_joint_states_pub;
+      //      ros::Publisher m_joint_states_pub;
 
       bool m_initialized;
     };
