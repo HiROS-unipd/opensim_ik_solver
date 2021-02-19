@@ -97,7 +97,7 @@ bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK()
   return true;
 }
 
-double hiros::opensim_ik::RTIMUIKTool::getJointPosition(const std::string& t_jointName, int t_idx = -1)
+double hiros::opensim_ik::RTIMUIKTool::getJointPosition(const std::string& t_jointName, int t_idx, bool t_in_degrees)
 {
   if (m_coordinate_names.findIndex(t_jointName) == -1) {
     std::cout << "Joint " << t_jointName << " not found" << std::endl;
@@ -106,10 +106,17 @@ double hiros::opensim_ik::RTIMUIKTool::getJointPosition(const std::string& t_joi
   if (t_idx == -1) {
     t_idx = m_model->getCoordinateSet().getIndex(t_jointName);
   }
-  return m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "value");
+
+  double val = m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "value");
+
+  if (t_in_degrees
+      && m_model->getCoordinateSet().get(t_idx).getMotionType() == OpenSim::Coordinate::MotionType::Rotational) {
+    return val * static_cast<double>(SimTK_RADIAN_TO_DEGREE);
+  }
+  return val;
 }
 
-double hiros::opensim_ik::RTIMUIKTool::getJointVelocity(const std::string& t_jointName, int t_idx = -1)
+double hiros::opensim_ik::RTIMUIKTool::getJointVelocity(const std::string& t_jointName, int t_idx, bool t_in_degrees)
 {
   if (m_coordinate_names.findIndex(t_jointName) == -1) {
     std::cout << "Joint " << t_jointName << " not found" << std::endl;
@@ -118,25 +125,33 @@ double hiros::opensim_ik::RTIMUIKTool::getJointVelocity(const std::string& t_joi
   if (t_idx == -1) {
     t_idx = m_model->getCoordinateSet().getIndex(t_jointName);
   }
-  return m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "speed");
+
+  double val = m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "speed");
+
+  // TODO: check if it works
+  if (t_in_degrees
+      && m_model->getCoordinateSet().get(t_idx).getMotionType() == OpenSim::Coordinate::MotionType::Rotational) {
+    return val * static_cast<double>(SimTK_RADIAN_TO_DEGREE);
+  }
+  return val;
 }
 
-std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointPositions()
+std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointPositions(bool t_in_degrees)
 {
   std::vector<double> values;
   values.reserve(static_cast<size_t>(m_coordinate_names.size()));
   for (int i = 0; i < m_coordinate_names.size(); ++i) {
-    values.push_back(getJointPosition(m_coordinate_names.get(i), i));
+    values.push_back(getJointPosition(m_coordinate_names.get(i), i, t_in_degrees));
   }
   return values;
 }
 
-std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointVelocities()
+std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointVelocities(bool t_in_degrees)
 {
   std::vector<double> values;
   values.reserve(static_cast<size_t>(m_coordinate_names.size()));
   for (int i = 0; i < m_coordinate_names.size(); ++i) {
-    values.push_back(getJointVelocity(m_coordinate_names.get(i), i));
+    values.push_back(getJointVelocity(m_coordinate_names.get(i), i, t_in_degrees));
   }
   return values;
 }

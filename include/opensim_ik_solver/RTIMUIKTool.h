@@ -26,10 +26,10 @@ namespace hiros {
                             const OpenSim::Set<OpenSim::OrientationWeight>* t_weights = nullptr);
 
       inline SimTK::State getState() { return *m_state.get(); }
-      double getJointPosition(const std::string& t_jointName, int t_idx);
-      double getJointVelocity(const std::string& t_jointName, int t_idx);
-      std::vector<double> getJointPositions();
-      std::vector<double> getJointVelocities();
+      double getJointPosition(const std::string& t_jointName, int t_idx = -1, bool t_in_degrees = false);
+      double getJointVelocity(const std::string& t_jointName, int t_idx = -1, bool t_in_degrees = false);
+      std::vector<double> getJointPositions(bool t_in_degrees = false);
+      std::vector<double> getJointVelocities(bool t_in_degrees = false);
 
     private:
       void updateOrientationsReference(const OpenSim::OrientationsReference& t_orientation_refs);
