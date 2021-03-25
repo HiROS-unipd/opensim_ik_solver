@@ -69,8 +69,6 @@ namespace hiros {
       void startConsumer();
       void startPublisher();
 
-      sensor_msgs::JointState getJointStateMsg();
-
       OpenSim::TimeSeriesTable_<SimTK::Quaternion> toQuaternionsTable(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg);
       OpenSim::TimeSeriesTable_<SimTK::Rotation> toRotationsTable(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg);
 
@@ -88,12 +86,8 @@ namespace hiros {
 
       ros::NodeHandle m_nh;
       std::string m_node_namespace;
-
-      std::vector<std::string> m_joint_names;
-
       ros::Subscriber m_orientations_sub;
-      //      ros::Publisher m_joint_states_pub;
-
+      std::vector<std::string> m_joint_names;
       bool m_initialized;
 
       SimTKRotJointStateQueue m_queue;

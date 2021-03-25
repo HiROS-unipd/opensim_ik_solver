@@ -64,8 +64,6 @@ void hiros::opensim_ik::IKSolver::setupRos()
   while (m_orientations_sub.getNumPublishers() == 0 && !ros::isShuttingDown()) {
     ROS_WARN_STREAM_DELAYED_THROTTLE(10, "OpenSim IK Solver... No input messages on " << m_general_params.input_topic);
   }
-
-  //  m_joint_states_pub = m_nh.advertise<sensor_msgs::JointState>("joint_states", 1);
 }
 
 void hiros::opensim_ik::IKSolver::initializeIMUPlacer()
@@ -146,6 +144,7 @@ void hiros::opensim_ik::IKSolver::startConsumer()
              m_imu_ik_tool_params.accuracy,
              m_general_params.sensor_to_opensim,
              m_joint_names};
+
   while (ros::ok()) {
     c.runSingleFrameIK();
   }
@@ -154,6 +153,7 @@ void hiros::opensim_ik::IKSolver::startConsumer()
 void hiros::opensim_ik::IKSolver::startPublisher()
 {
   Publisher p{SimTKRotJointStateQueuePtr(&m_queue), m_nh};
+
   while (ros::ok()) {
     p.publish();
   }
@@ -216,17 +216,6 @@ hiros::opensim_ik::IKSolver::toRotationsTable(const hiros_xsens_mtw_wrapper::MIM
   return OpenSim::TimeSeriesTable_<SimTK::Rotation>(time, rotation_matrix, imu_labels);
 }
 
-sensor_msgs::JointState hiros::opensim_ik::IKSolver::getJointStateMsg()
-{
-  sensor_msgs::JointState out_msg;
-
-  out_msg.header.stamp = ros::Time(m_rt_imu_ik_tool->getState().getTime());
-  out_msg.name = m_joint_names;
-  out_msg.position = m_rt_imu_ik_tool->getJointPositions();
-
-  return out_msg;
-}
-
 void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_xsens_mtw_wrapper::MIMUArray& t_msg)
 {
   if (!m_initialized) {
@@ -245,7 +234,5 @@ void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_xsens_mtw_wra
   }
   else {
     m_queue.push(toRotationsTable(t_msg));
-    //    m_rt_imu_ik_tool->runSingleFrameIK(toRotationsTable(t_msg));
-    //    m_joint_states_pub.publish(getJointStateMsg());
   }
 }
