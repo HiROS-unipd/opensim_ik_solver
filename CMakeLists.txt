@@ -122,7 +122,7 @@ target_include_directories(${PROJECT_NAME}_node
 install(TARGETS ${PROJECT_NAME}_node
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-install(FILES include/xsens_mtw/Wrapper.h
+install(FILES include/opensim_ik_solver/IKSolver.h
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(DIRECTORY config launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
