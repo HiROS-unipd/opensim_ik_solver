@@ -14,9 +14,9 @@ hiros::opensim_ik::Consumer::Consumer(const OpenSim::Model& t_model,
 
 void hiros::opensim_ik::Consumer::runSingleFrameIK()
 {
-  queue.take_next_to_consume(m_rotation_table, m_joint_state, m_processed);
+  queue.takeNextToConsume(m_rotation_table, m_joint_state, m_processed);
   runIK();
-  queue.notify_output_ready(m_processed);
+  queue.notifyOutputReady(m_processed);
 }
 
 void hiros::opensim_ik::Consumer::runIK()

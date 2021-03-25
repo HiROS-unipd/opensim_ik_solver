@@ -11,7 +11,7 @@
 // Internal dependencies
 #include "Queue.h"
 
-extern Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
+extern hiros::opensim_ik::Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
 
 namespace hiros {
   namespace opensim_ik {

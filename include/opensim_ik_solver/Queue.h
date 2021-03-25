@@ -3,126 +3,128 @@
 
 #include <condition_variable>
 #include <mutex>
-//#include <string>
 
-template <typename T_in, typename T_out>
-class Queue
-{
-private:
-  struct Node
-  {
-    std::shared_ptr<T_in> data_in;
-    std::shared_ptr<T_out> data_out;
-    std::shared_ptr<bool> processed;
-    std::shared_ptr<Node> next;
-    Node(std::shared_ptr<T_in> data_in_, std::shared_ptr<T_out> data_out_, std::shared_ptr<bool> processed_)
-      : data_in(std::move(data_in_))
-      , data_out(std::move(data_out_))
-      , processed(std::move(processed_))
-    {}
-  };
-  std::shared_ptr<Node> head;
-  std::shared_ptr<Node> tail;
-  std::shared_ptr<Node> next_to_consume;
-  std::mutex headMutex;
-  std::mutex tailMutex;
-  std::mutex next_to_consumeMutex;
-  std::condition_variable new_element_present;
-  std::condition_variable output_ready;
+namespace hiros {
+  namespace opensim_ik {
 
-public:
-  Queue()
-    : head(std::make_shared<Node>(
-      Node(std::make_shared<T_in>(T_in{}), std::make_shared<T_out>(T_out{}), std::make_shared<bool>(false))))
-    , tail(head)
-    , next_to_consume(head)
-  {}
-
-  Queue(const Queue& other) = delete;
-  Queue& operator=(const Queue& other) = delete;
-
-  std::shared_ptr<T_out> pop()
-  {
-    std::unique_lock<std::mutex> headLock(headMutex);
-
-    while (!*(head->processed)) {
-      output_ready.wait(headLock);
-    }
-    auto output = head->data_out;
-    head = std::move(head->next);
-    return output;
-  }
-
-  void notify_output_ready(std::shared_ptr<bool>& ptr_processed)
-  {
-    (*ptr_processed) = true;
-    output_ready.notify_one();
-  }
-
-  void push(T_in data_in_)
-  {
-    auto dummyNode = std::make_shared<Node>(
-      Node(std::make_shared<T_in>(T_in{}), std::make_shared<T_out>(T_out{}), std::make_shared<bool>(false)));
-    auto newTail = dummyNode;
-
-    auto data_in_ptr = std::make_shared<T_in>(std::move(data_in_));
-    auto data_out_ptr = std::make_shared<T_out>(T_out{});
-
+    template <typename T_in, typename T_out>
+    class Queue
     {
-      std::unique_lock<std::mutex> tailLock(tailMutex);
-      tail->next = std::move(dummyNode);
-      tail->data_in = std::move(data_in_ptr);
-      tail->data_out = std::move(data_out_ptr);
-      tail = newTail;
-    }
+    public:
+      Queue()
+        : m_head(std::make_shared<Node>())
+        , m_tail(m_head)
+        , m_next_to_consume(m_head)
+      {}
 
-    new_element_present.notify_one();
-  }
+      Queue(const Queue& t_other) = delete;
+      Queue& operator=(const Queue& t_other) = delete;
 
-  void take_next_to_consume(std::shared_ptr<T_in>& ptr_in,
-                            std::shared_ptr<T_out>& ptr_out,
-                            std::shared_ptr<bool>& ptr_processed)
-  {
-    std::unique_lock<std::mutex> next_to_consumeLock(next_to_consumeMutex);
-    {
-      std::unique_lock<std::mutex> tailLock(tailMutex);
-      while (next_to_consume == tail) {
-        new_element_present.wait(tailLock);
-      }
-    }
-
-    ptr_in = next_to_consume->data_in;
-    ptr_out = next_to_consume->data_out;
-    ptr_processed = next_to_consume->processed;
-
-    next_to_consume = next_to_consume->next;
-  }
-
-  /*std::string print_queue()
-  {
-      std::shared_ptr<Node> temp_ptr=head;
-      std::string return_value{""};
-
-      while (temp_ptr!=tail)
+      size_t size()
       {
-          return_value+="\ndata_in  :";
-          return_value.append(temp_ptr->data_in->toString());
-          return_value+="\ndata_out :";
-          return_value.append(temp_ptr->data_out->toString());
-          return_value+="\nprocessed:";
-          if(*(temp_ptr->processed))
-          {
-              return_value+="true";
-          }
-          else
-          {
-              return_value+="false";
-          }
-          return_value+="\n-----------------------------------------";
-          temp_ptr=temp_ptr->next;
+        if (!m_head) {
+          return 0;
+        }
+
+        size_t size = 0;
+        auto tmp_ptr = m_head;
+
+        while (tmp_ptr != m_tail) {
+          ++size;
+          tmp_ptr = tmp_ptr->next;
+        }
+
+        return size;
       }
-      return return_value;
-  }*/
-};
+
+      void push(T_in t_data_in)
+      {
+        auto new_tail = std::make_shared<Node>();
+        auto data_in_ptr = std::make_shared<T_in>(std::move(t_data_in));
+
+        {
+          std::unique_lock<std::mutex> tail_lock(m_tail_mutex);
+          m_tail->next = new_tail;
+          m_tail->data_in = std::move(data_in_ptr);
+          m_tail = std::move(new_tail);
+        }
+
+        m_new_element_present.notify_one();
+      }
+
+      void takeNextToConsume(std::shared_ptr<T_in>& t_data_in_ptr,
+                             std::shared_ptr<T_out>& t_data_out_ptr,
+                             std::shared_ptr<bool>& t_processed_ptr)
+      {
+        std::unique_lock<std::mutex> next_to_consume_lock(m_next_to_consume_mutex);
+
+        {
+          std::unique_lock<std::mutex> tail_lock(m_tail_mutex);
+
+          while (m_next_to_consume == m_tail) {
+            m_new_element_present.wait(tail_lock);
+          }
+        }
+
+        t_data_in_ptr = m_next_to_consume->data_in;
+        t_data_out_ptr = m_next_to_consume->data_out;
+        t_processed_ptr = m_next_to_consume->processed;
+
+        m_next_to_consume = m_next_to_consume->next;
+      }
+
+      void notifyOutputReady(std::shared_ptr<bool> t_processed_ptr)
+      {
+        *t_processed_ptr = true;
+        m_output_ready.notify_one();
+      }
+
+      T_out pop()
+      {
+        std::unique_lock<std::mutex> head_lock(m_head_mutex);
+
+        while (!*(m_head->processed)) {
+          m_output_ready.wait(head_lock);
+        }
+
+        auto data_out_ptr = std::move(m_head->data_out);
+        m_head = std::move(m_head->next);
+
+        return *data_out_ptr;
+      }
+
+    private:
+      struct Node
+      {
+        std::shared_ptr<T_in> data_in;
+        std::shared_ptr<T_out> data_out;
+        std::shared_ptr<bool> processed;
+
+        std::shared_ptr<Node> next;
+
+        Node(std::shared_ptr<T_in> t_data_in = std::make_shared<T_in>(),
+             std::shared_ptr<T_out> t_data_out = std::make_shared<T_out>(),
+             std::shared_ptr<bool> t_processed = std::make_shared<bool>(false))
+          : data_in(std::move(t_data_in))
+          , data_out(std::move(t_data_out))
+          , processed(std::move(t_processed))
+          , next(nullptr)
+        {}
+      };
+
+      std::shared_ptr<Node> m_head;
+      std::shared_ptr<Node> m_tail;
+      std::shared_ptr<Node> m_next_to_consume;
+
+      std::mutex m_head_mutex;
+      std::mutex m_tail_mutex;
+      std::mutex m_next_to_consume_mutex;
+
+      std::condition_variable m_new_element_present;
+      std::condition_variable m_output_ready;
+    };
+
+  } // namespace opensim_ik
+} // namespace hiros
 
 #endif

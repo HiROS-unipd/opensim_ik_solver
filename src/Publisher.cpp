@@ -8,5 +8,5 @@ hiros::opensim_ik::Publisher::Publisher(const ros::NodeHandle& t_nh, const std::
 
 void hiros::opensim_ik::Publisher::publish()
 {
-  m_pub.publish(*queue.pop());
+  m_pub.publish(queue.pop());
 }

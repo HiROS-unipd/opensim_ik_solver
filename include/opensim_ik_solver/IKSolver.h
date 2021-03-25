@@ -17,7 +17,7 @@
 #define BASH_MSG_RESET "\033[0m"
 #define BASH_MSG_GREEN "\033[32m"
 
-extern Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
+extern hiros::opensim_ik::Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
 
 namespace hiros {
   namespace opensim_ik {
