@@ -141,7 +141,11 @@ void hiros::opensim_ik::IKSolver::initializeJointStateNames()
 
 void hiros::opensim_ik::IKSolver::startConsumer()
 {
-  Consumer c{m_model, m_imu_ik_tool_params.accuracy, m_general_params.sensor_to_opensim, m_joint_names};
+  Consumer c{SimTKRotJointStateQueuePtr(&m_queue),
+             m_model,
+             m_imu_ik_tool_params.accuracy,
+             m_general_params.sensor_to_opensim,
+             m_joint_names};
   while (ros::ok()) {
     c.runSingleFrameIK();
   }
@@ -149,7 +153,7 @@ void hiros::opensim_ik::IKSolver::startConsumer()
 
 void hiros::opensim_ik::IKSolver::startPublisher()
 {
-  Publisher p(m_nh);
+  Publisher p{SimTKRotJointStateQueuePtr(&m_queue), m_nh};
   while (ros::ok()) {
     p.publish();
   }
@@ -240,7 +244,7 @@ void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_xsens_mtw_wra
     m_initialized = true;
   }
   else {
-    queue.push(toRotationsTable(t_msg));
+    m_queue.push(toRotationsTable(t_msg));
     //    m_rt_imu_ik_tool->runSingleFrameIK(toRotationsTable(t_msg));
     //    m_joint_states_pub.publish(getJointStateMsg());
   }

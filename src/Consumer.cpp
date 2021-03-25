@@ -1,12 +1,14 @@
 #include "opensim_ik_solver/Consumer.h"
 
-hiros::opensim_ik::Consumer::Consumer(const OpenSim::Model& t_model,
+hiros::opensim_ik::Consumer::Consumer(SimTKRotJointStateQueuePtr t_queue_ptr,
+                                      const OpenSim::Model& t_model,
                                       const double& t_accuracy,
                                       const SimTK::Rotation& t_sensor_to_opensim,
                                       const std::vector<std::string>& t_joint_names)
   : m_processed(nullptr)
   , m_rotation_table(nullptr)
   , m_joint_state(nullptr)
+  , m_queue_ptr(t_queue_ptr)
 {
   m_joint_names = std::move(t_joint_names);
   m_rt_imu_ik_tool = std::make_unique<hiros::opensim_ik::RTIMUIKTool>(t_model, t_accuracy, t_sensor_to_opensim);
@@ -14,9 +16,9 @@ hiros::opensim_ik::Consumer::Consumer(const OpenSim::Model& t_model,
 
 void hiros::opensim_ik::Consumer::runSingleFrameIK()
 {
-  queue.takeNextToConsume(m_rotation_table, m_joint_state, m_processed);
+  m_queue_ptr->takeNextToConsume(m_rotation_table, m_joint_state, m_processed);
   runIK();
-  queue.notifyOutputReady(m_processed);
+  m_queue_ptr->notifyOutputReady(m_processed);
 }
 
 void hiros::opensim_ik::Consumer::runIK()

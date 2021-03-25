@@ -17,10 +17,11 @@
 #define BASH_MSG_RESET "\033[0m"
 #define BASH_MSG_GREEN "\033[32m"
 
-extern hiros::opensim_ik::Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
-
 namespace hiros {
   namespace opensim_ik {
+
+    typedef Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> SimTKRotJointStateQueue;
+    typedef std::shared_ptr<SimTKRotJointStateQueue> SimTKRotJointStateQueuePtr;
 
     struct GeneralParameters
     {
@@ -94,6 +95,8 @@ namespace hiros {
       //      ros::Publisher m_joint_states_pub;
 
       bool m_initialized;
+
+      SimTKRotJointStateQueue m_queue;
     };
 
   } // namespace opensim_ik

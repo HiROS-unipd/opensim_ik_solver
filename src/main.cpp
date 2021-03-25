@@ -5,9 +5,6 @@
 #include "opensim_ik_solver/IKSolver.h"
 #include "opensim_ik_solver/Queue.h"
 
-extern hiros::opensim_ik::Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
-hiros::opensim_ik::Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
-
 int main(int argc, char* argv[])
 {
   std::string node_name = "hiros_opensim_ik_solver";

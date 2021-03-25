@@ -11,15 +11,17 @@
 #include "opensim_ik_solver/Queue.h"
 #include "opensim_ik_solver/RTIMUIKTool.h"
 
-extern hiros::opensim_ik::Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> queue;
-
 namespace hiros {
   namespace opensim_ik {
+
+    typedef std::shared_ptr<Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState>>
+      SimTKRotJointStateQueuePtr;
 
     class Consumer
     {
     public:
-      Consumer(const OpenSim::Model& t_model,
+      Consumer(SimTKRotJointStateQueuePtr t_queue_ptr,
+               const OpenSim::Model& t_model,
                const double& t_accuracy = 1e-4,
                const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation(),
                const std::vector<std::string>& t_joint_names = {});
@@ -35,6 +37,8 @@ namespace hiros {
       std::vector<std::string> m_joint_names;
 
       std::unique_ptr<hiros::opensim_ik::RTIMUIKTool> m_rt_imu_ik_tool;
+
+      SimTKRotJointStateQueuePtr m_queue_ptr;
     };
 
   } // namespace opensim_ik
