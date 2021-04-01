@@ -9,7 +9,7 @@
 
     <!-- General Parameters -->
     <arg name="n_threads"                    value="6"           />
-    <arg name="input_topic"                  value="/xsens/data" />
+    <arg name="input_topic"                  value="/xsens/osg"  />
     <arg name="sensor_to_opensim_rotation_x" value="-1.5707963"  />
     <arg name="sensor_to_opensim_rotation_y" value="1.5707963"   />
     <arg name="sensor_to_opensim_rotation_z" value="0"           />
@@ -27,6 +27,17 @@
     <arg name="accuracy"         value="1e-4" />
     <arg name="visualize_motion" value="true" />
   </include>
+
+
+  <!-- Converter -->
+  <node pkg="xsens_mimu_array_to_orientation_skeleton_group" type="xma2osg" name="converter" output="screen" required="true">
+    <param name="node_name"    type="str" value="converter"   />
+
+    <!-- Parameters -->
+    <param name="input_topic"  type="str" value="/xsens/data" />
+    <param name="output_topic" type="str" value="/xsens/osg"  />
+    <param name="global_frame" type="str" value="world"       />
+  </node>
 
 
   <!-- Rosbag -->

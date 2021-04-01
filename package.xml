@@ -15,5 +15,5 @@
 
   <depend>roscpp</depend>
   <depend>sensor_msgs</depend>
-  <depend>hiros_xsens_mtw_wrapper</depend>
+  <depend>hiros_skeleton_msgs</depend>
 </package>

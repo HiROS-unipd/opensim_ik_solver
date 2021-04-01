@@ -11,7 +11,7 @@ find_package(catkin REQUIRED
              COMPONENTS
              roscpp
              sensor_msgs
-             hiros_xsens_mtw_wrapper)
+             hiros_skeleton_msgs)
 
 ## System dependencies are found with CMake's conventions
 find_package(OpenSim REQUIRED)
