@@ -6,9 +6,7 @@ hiros::opensim_ik::RTIMUIKTool::RTIMUIKTool(const double& t_accuracy, const SimT
   , m_sensor_to_opensim(t_sensor_to_opensim)
   , m_accuracy(t_accuracy)
   , m_use_visualizer(false)
-{
-  m_orientation_refs = std::make_unique<OpenSim::OrientationsReference>();
-}
+{}
 
 hiros::opensim_ik::RTIMUIKTool::RTIMUIKTool(const OpenSim::Model& t_model,
                                             const double& t_accuracy,
@@ -16,8 +14,6 @@ hiros::opensim_ik::RTIMUIKTool::RTIMUIKTool(const OpenSim::Model& t_model,
   : RTIMUIKTool(t_accuracy, t_sensor_to_opensim)
 {
   setModel(t_model);
-
-  m_orientation_refs = std::make_unique<OpenSim::OrientationsReference>();
 }
 
 hiros::opensim_ik::RTIMUIKTool::~RTIMUIKTool() {}
@@ -70,6 +66,10 @@ void hiros::opensim_ik::RTIMUIKTool::updateOrientationsReference(
 
 bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK()
 {
+  if (m_orientation_refs == nullptr) {
+    return false;
+  }
+
   if (m_orientation_refs->getTimes().empty()) {
     std::cout << "Warning: the orientation reference is empty. Skipping" << std::endl;
     return false;
