@@ -48,7 +48,7 @@ namespace hiros {
       double m_accuracy;
       bool m_use_visualizer;
 
-      std::unique_ptr<OpenSim::OrientationsReference> m_orientation_refs;
+      std::shared_ptr<OpenSim::OrientationsReference> m_orientation_refs;
 
       std::unique_ptr<OpenSim::InverseKinematicsSolver> m_ik_solver;
       std::unique_ptr<SimTK::State> m_state;

@@ -47,7 +47,7 @@ bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK(
 void hiros::opensim_ik::RTIMUIKTool::updateOrientationsReference(
   const OpenSim::OrientationsReference& t_orientation_refs)
 {
-  m_orientation_refs = std::make_unique<OpenSim::OrientationsReference>(t_orientation_refs);
+  m_orientation_refs = std::make_shared<OpenSim::OrientationsReference>(t_orientation_refs);
 }
 
 void hiros::opensim_ik::RTIMUIKTool::updateOrientationsReference(
@@ -61,7 +61,7 @@ void hiros::opensim_ik::RTIMUIKTool::updateOrientationsReference(
   }
 
   m_orientation_refs =
-    std::make_unique<OpenSim::OrientationsReference>(OpenSim::OrientationsReference(orientations, t_weights));
+    std::make_shared<OpenSim::OrientationsReference>(OpenSim::OrientationsReference(orientations, t_weights));
 };
 
 bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK()
@@ -84,7 +84,7 @@ bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK()
     initialize();
   }
 
-  m_ik_solver->updateOrientationsReference(*m_orientation_refs);
+  m_ik_solver->updateOrientationsReference(m_orientation_refs);
   m_state->updTime() = m_orientation_refs->getTimes().front();
   m_ik_solver->track(*m_state);
 
