@@ -14,13 +14,12 @@
 namespace hiros {
   namespace opensim_ik {
 
-    typedef std::shared_ptr<Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState>>
-      SimTKRotJointStateQueuePtr;
+    typedef std::shared_ptr<Queue<OpenSim::OrientationsReference, sensor_msgs::JointState>> OrRefJointStateQueuePtr;
 
     class Publisher
     {
     public:
-      Publisher(SimTKRotJointStateQueuePtr t_queue_ptr,
+      Publisher(OrRefJointStateQueuePtr t_queue_ptr,
                 const ros::NodeHandle& t_nh,
                 const std::string& t_topic_name = "joint_state");
 
@@ -30,7 +29,7 @@ namespace hiros {
       ros::NodeHandle m_nh;
       ros::Publisher m_pub;
 
-      SimTKRotJointStateQueuePtr m_queue_ptr;
+      OrRefJointStateQueuePtr m_queue_ptr;
     };
 
   } // namespace opensim_ik

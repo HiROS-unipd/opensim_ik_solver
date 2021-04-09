@@ -139,7 +139,7 @@ void hiros::opensim_ik::IKSolver::initializeJointStateNames()
 
 void hiros::opensim_ik::IKSolver::startConsumer()
 {
-  Consumer c{SimTKRotJointStateQueuePtr(&m_queue),
+  Consumer c{OrRefJointStateQueuePtr(&m_queue),
              m_model,
              m_imu_ik_tool_params.accuracy,
              m_general_params.sensor_to_opensim,
@@ -152,7 +152,7 @@ void hiros::opensim_ik::IKSolver::startConsumer()
 
 void hiros::opensim_ik::IKSolver::startPublisher()
 {
-  Publisher p{SimTKRotJointStateQueuePtr(&m_queue), m_nh};
+  Publisher p{OrRefJointStateQueuePtr(&m_queue), m_nh};
 
   while (ros::ok()) {
     p.publish();
@@ -215,6 +215,32 @@ hiros::opensim_ik::IKSolver::toRotationsTable(const hiros_skeleton_msgs::Orienta
   return OpenSim::TimeSeriesTable_<SimTK::Rotation>(time, rotation_matrix, imu_labels);
 }
 
+OpenSim::Set<OpenSim::OrientationWeight>
+hiros::opensim_ik::IKSolver::toOrientationWeightSet(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const
+{
+  // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
+  // NB: currently require to have n_orientations = max_orientations for each orientation group
+
+  OpenSim::Set<OpenSim::OrientationWeight> weights;
+  for (const auto& og : t_msg.orientation_skeletons.front().orientation_groups) {
+    for (const auto& o : og.orientations) {
+      weights.insert(weights.getSize(), OpenSim::OrientationWeight(o.orientation.header.frame_id, o.confidence));
+    }
+  }
+
+  return weights;
+}
+
+OpenSim::OrientationsReference
+hiros::opensim_ik::IKSolver::toOrientationsReference(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const
+{
+  // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
+  // NB: currently require to have n_orientations = max_orientations for each orientation group
+
+  auto weights = toOrientationWeightSet(t_msg);
+  return OpenSim::OrientationsReference(toRotationsTable(t_msg), &weights);
+}
+
 unsigned int
 hiros::opensim_ik::IKSolver::getNumberOfOrientations(const hiros_skeleton_msgs::OrientationSkeleton& t_os) const
 {
@@ -244,6 +270,6 @@ void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_skeleton_msgs
     m_initialized = true;
   }
   else {
-    m_queue.push(toRotationsTable(t_msg));
+    m_queue.push(toOrientationsReference(t_msg));
   }
 }

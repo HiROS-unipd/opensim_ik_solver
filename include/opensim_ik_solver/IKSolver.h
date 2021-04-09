@@ -20,8 +20,8 @@
 namespace hiros {
   namespace opensim_ik {
 
-    typedef Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState> SimTKRotJointStateQueue;
-    typedef std::shared_ptr<SimTKRotJointStateQueue> SimTKRotJointStateQueuePtr;
+    typedef Queue<OpenSim::OrientationsReference, sensor_msgs::JointState> OrRefJointStateQueue;
+    typedef std::shared_ptr<OrRefJointStateQueue> OrRefJointStateQueuePtr;
 
     struct GeneralParameters
     {
@@ -73,6 +73,10 @@ namespace hiros {
       toQuaternionsTable(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const;
       OpenSim::TimeSeriesTable_<SimTK::Rotation>
       toRotationsTable(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const;
+      OpenSim::Set<OpenSim::OrientationWeight>
+      toOrientationWeightSet(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const;
+      OpenSim::OrientationsReference
+      toOrientationsReference(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const;
       unsigned int getNumberOfOrientations(const hiros_skeleton_msgs::OrientationSkeleton& t_os) const;
 
       void orientationsCallback(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg);
@@ -93,7 +97,7 @@ namespace hiros {
       std::vector<std::string> m_joint_names;
       bool m_initialized;
 
-      SimTKRotJointStateQueue m_queue;
+      OrRefJointStateQueue m_queue;
     };
 
   } // namespace opensim_ik

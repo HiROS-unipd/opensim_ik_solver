@@ -14,13 +14,12 @@
 namespace hiros {
   namespace opensim_ik {
 
-    typedef std::shared_ptr<Queue<OpenSim::TimeSeriesTable_<SimTK::Rotation>, sensor_msgs::JointState>>
-      SimTKRotJointStateQueuePtr;
+    typedef std::shared_ptr<Queue<OpenSim::OrientationsReference, sensor_msgs::JointState>> OrRefJointStateQueuePtr;
 
     class Consumer
     {
     public:
-      Consumer(SimTKRotJointStateQueuePtr t_queue_ptr,
+      Consumer(OrRefJointStateQueuePtr t_queue_ptr,
                const OpenSim::Model& t_model,
                const double& t_accuracy = 1e-4,
                const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation(),
@@ -32,13 +31,13 @@ namespace hiros {
       void runIK();
 
       std::shared_ptr<bool> m_processed;
-      std::shared_ptr<OpenSim::TimeSeriesTable_<SimTK::Rotation>> m_rotation_table;
+      std::shared_ptr<OpenSim::OrientationsReference> m_orientations_reference;
       std::shared_ptr<sensor_msgs::JointState> m_joint_state;
       std::vector<std::string> m_joint_names;
 
       std::unique_ptr<hiros::opensim_ik::RTIMUIKTool> m_rt_imu_ik_tool;
 
-      SimTKRotJointStateQueuePtr m_queue_ptr;
+      OrRefJointStateQueuePtr m_queue_ptr;
     };
 
   } // namespace opensim_ik
