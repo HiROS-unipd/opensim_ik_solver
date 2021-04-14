@@ -176,11 +176,9 @@ hiros::opensim_ik::IKSolver::toQuaternionsTable(const hiros_skeleton_msgs::Orien
   int col = -1;
   for (const auto& og : t_msg.orientation_skeletons.front().orientation_groups) {
     for (const auto& o : og.orientations) {
-      quaternion_matrix.updElt(0, ++col) = SimTK::Quaternion(o.orientation.orientation.w,
-                                                             o.orientation.orientation.x,
-                                                             o.orientation.orientation.y,
-                                                             o.orientation.orientation.z);
-      imu_labels.push_back(o.orientation.header.frame_id);
+      quaternion_matrix.updElt(0, ++col) = SimTK::Quaternion(
+        o.mimu.imu.orientation.w, o.mimu.imu.orientation.x, o.mimu.imu.orientation.y, o.mimu.imu.orientation.z);
+      imu_labels.push_back(o.mimu.imu.header.frame_id);
     }
   }
 
@@ -204,11 +202,9 @@ hiros::opensim_ik::IKSolver::toRotationsTable(const hiros_skeleton_msgs::Orienta
   int col = -1;
   for (const auto& og : t_msg.orientation_skeletons.front().orientation_groups) {
     for (const auto& o : og.orientations) {
-      rotation_matrix.updElt(0, ++col) = SimTK::Rotation(SimTK::Quaternion(o.orientation.orientation.w,
-                                                                           o.orientation.orientation.x,
-                                                                           o.orientation.orientation.y,
-                                                                           o.orientation.orientation.z));
-      imu_labels.push_back(o.orientation.header.frame_id);
+      rotation_matrix.updElt(0, ++col) = SimTK::Rotation(SimTK::Quaternion(
+        o.mimu.imu.orientation.w, o.mimu.imu.orientation.x, o.mimu.imu.orientation.y, o.mimu.imu.orientation.z));
+      imu_labels.push_back(o.mimu.imu.header.frame_id);
     }
   }
 
@@ -224,7 +220,7 @@ hiros::opensim_ik::IKSolver::toOrientationWeightSet(const hiros_skeleton_msgs::O
   OpenSim::Set<OpenSim::OrientationWeight> weights;
   for (const auto& og : t_msg.orientation_skeletons.front().orientation_groups) {
     for (const auto& o : og.orientations) {
-      weights.insert(weights.getSize(), OpenSim::OrientationWeight(o.orientation.header.frame_id, o.confidence));
+      weights.insert(weights.getSize(), OpenSim::OrientationWeight(o.mimu.imu.header.frame_id, o.confidence));
     }
   }
 
