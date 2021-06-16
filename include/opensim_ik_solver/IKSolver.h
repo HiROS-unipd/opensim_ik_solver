@@ -6,7 +6,7 @@
 #include "sensor_msgs/JointState.h"
 
 // Skeleton messages dependencies
-#include "hiros_skeleton_msgs/OrientationSkeletonGroup.h"
+#include "hiros_skeleton_msgs/SkeletonGroup.h"
 
 // Internal dependencies
 #include "opensim_ik_solver/Queue.h"
@@ -62,7 +62,7 @@ namespace hiros {
       void initializeIMUPlacer();
       void initializeModel();
       void initializeThreads();
-      void calibrateIMUs(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg);
+      void calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
       void initializeIKTool();
       void initializeJointStateNames();
 
@@ -70,16 +70,14 @@ namespace hiros {
       void startPublisher();
 
       OpenSim::TimeSeriesTable_<SimTK::Quaternion>
-      toQuaternionsTable(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const;
+      toQuaternionsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const;
       OpenSim::TimeSeriesTable_<SimTK::Rotation>
-      toRotationsTable(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const;
+      toRotationsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const;
       OpenSim::Set<OpenSim::OrientationWeight>
-      toOrientationWeightSet(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const;
-      OpenSim::OrientationsReference
-      toOrientationsReference(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg) const;
-      unsigned int getNumberOfOrientations(const hiros_skeleton_msgs::OrientationSkeleton& t_os) const;
+      toOrientationWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const;
+      OpenSim::OrientationsReference toOrientationsReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const;
 
-      void orientationsCallback(const hiros_skeleton_msgs::OrientationSkeletonGroup& t_msg);
+      void orientationsCallback(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
 
       GeneralParameters m_general_params;
       IMUPlacerParameters m_imu_placer_params;
