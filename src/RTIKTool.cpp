@@ -172,6 +172,96 @@ std::vector<double> hiros::opensim_ik::RTIKTool::getJointAngleVelocities(bool t_
   return values;
 }
 
+std::string hiros::opensim_ik::RTIKTool::getMarkerName(int t_idx) const
+{
+  if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
+    std::cout << "Marker with index " << t_idx << " not found" << std::endl;
+    return std::string();
+  }
+
+  return m_model->getMarkerSet().get(t_idx).getName();
+}
+
+SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerPosition(int t_idx) const
+{
+  if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
+    std::cout << "Marker with index " << t_idx << " not found" << std::endl;
+    return SimTK::Vec3(std::numeric_limits<double>::quiet_NaN(),
+                       std::numeric_limits<double>::quiet_NaN(),
+                       std::numeric_limits<double>::quiet_NaN());
+  }
+
+  return m_model->getMarkerSet().get(t_idx).getLocationInGround(*m_state);
+}
+
+SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerVelocity(int t_idx) const
+{
+  if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
+    std::cout << "Marker with index " << t_idx << " not found" << std::endl;
+    return SimTK::Vec3(std::numeric_limits<double>::quiet_NaN(),
+                       std::numeric_limits<double>::quiet_NaN(),
+                       std::numeric_limits<double>::quiet_NaN());
+  }
+
+  return m_model->getMarkerSet().get(t_idx).getVelocityInGround(*m_state);
+}
+
+SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerAcceleration(int t_idx) const
+{
+  if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
+    std::cout << "Marker with index " << t_idx << " not found" << std::endl;
+    return SimTK::Vec3(std::numeric_limits<double>::quiet_NaN(),
+                       std::numeric_limits<double>::quiet_NaN(),
+                       std::numeric_limits<double>::quiet_NaN());
+  }
+
+  return m_model->getMarkerSet().get(t_idx).getAccelerationInGround(*m_state);
+}
+
+std::vector<std::string> hiros::opensim_ik::RTIKTool::getMarkerNames() const
+{
+  auto n_markers = m_model->getMarkerSet().getSize();
+  std::vector<std::string> values;
+  values.reserve(static_cast<size_t>(n_markers));
+  for (int mk_idx = 0; mk_idx < n_markers; ++mk_idx) {
+    values.push_back(getMarkerName(mk_idx));
+  }
+  return values;
+}
+
+std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerPositions() const
+{
+  auto n_markers = m_model->getMarkerSet().getSize();
+  std::vector<SimTK::Vec3> values;
+  values.reserve(static_cast<size_t>(n_markers));
+  for (int mk_idx = 0; mk_idx < n_markers; ++mk_idx) {
+    values.push_back(getMarkerPosition(mk_idx));
+  }
+  return values;
+}
+
+std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerVelocities() const
+{
+  auto n_markers = m_model->getMarkerSet().getSize();
+  std::vector<SimTK::Vec3> values;
+  values.reserve(static_cast<size_t>(n_markers));
+  for (int mk_idx = 0; mk_idx < n_markers; ++mk_idx) {
+    values.push_back(getMarkerVelocity(mk_idx));
+  }
+  return values;
+}
+
+std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerAccelerations() const
+{
+  auto n_markers = m_model->getMarkerSet().getSize();
+  std::vector<SimTK::Vec3> values;
+  values.reserve(static_cast<size_t>(n_markers));
+  for (int mk_idx = 0; mk_idx < n_markers; ++mk_idx) {
+    values.push_back(getMarkerAcceleration(mk_idx));
+  }
+  return values;
+}
+
 void hiros::opensim_ik::RTIKTool::initialize()
 {
   if (!m_model) {

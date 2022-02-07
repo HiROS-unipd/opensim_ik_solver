@@ -34,6 +34,15 @@ namespace hiros {
       std::vector<double> getJointAnglePositions(bool t_in_degrees = false) const;
       std::vector<double> getJointAngleVelocities(bool t_in_degrees = false) const;
 
+      std::string getMarkerName(int t_idx) const;
+      SimTK::Vec3 getMarkerPosition(int t_idx) const;
+      SimTK::Vec3 getMarkerVelocity(int t_idx) const;
+      SimTK::Vec3 getMarkerAcceleration(int t_idx) const;
+      std::vector<std::string> getMarkerNames() const;
+      std::vector<SimTK::Vec3> getMarkerPositions() const;
+      std::vector<SimTK::Vec3> getMarkerVelocities() const;
+      std::vector<SimTK::Vec3> getMarkerAccelerations() const;
+
     private:
       void updateOrientationsReference(const OpenSim::OrientationsReference& t_orientation_refs);
       void updateOrientationsReference(const OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>& t_orientations,
