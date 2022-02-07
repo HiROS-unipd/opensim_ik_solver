@@ -23,6 +23,6 @@ void hiros::opensim_ik::Consumer::runIK()
 {
   m_rt_ik_tool->runSingleFrameIK(*m_orientations_reference);
   m_joint_state->header.stamp = ros::Time(m_rt_ik_tool->getState().getTime());
-  m_joint_state->name = m_joint_names;
-  m_joint_state->position = m_rt_ik_tool->getJointPositions(true);
+  m_joint_state->name = m_rt_ik_tool->getJointAngleNames();
+  m_joint_state->position = m_rt_ik_tool->getJointAnglePositions(true);
 }

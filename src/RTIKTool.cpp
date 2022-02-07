@@ -96,14 +96,21 @@ bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
   return true;
 }
 
-double hiros::opensim_ik::RTIKTool::getJointPosition(const std::string& t_jointName, int t_idx, bool t_in_degrees)
+std::string hiros::opensim_ik::RTIKTool::getJointAngleName(int t_idx) const
 {
-  if (m_coordinate_names.findIndex(t_jointName) == -1) {
-    std::cout << "Joint " << t_jointName << " not found" << std::endl;
-    return std::numeric_limits<double>::quiet_NaN();
+  if (t_idx < 0 || t_idx >= m_model->getCoordinateSet().getSize()) {
+    std::cout << "Joint angle with index " << t_idx << " not found" << std::endl;
+    return std::string();
   }
-  if (t_idx == -1) {
-    t_idx = m_model->getCoordinateSet().getIndex(t_jointName);
+
+  return m_model->getCoordinateSet().get(t_idx).getName();
+}
+
+double hiros::opensim_ik::RTIKTool::getJointAnglePosition(int t_idx, bool t_in_degrees) const
+{
+  if (t_idx < 0 || t_idx >= m_model->getCoordinateSet().getSize()) {
+    std::cout << "Joint angle with index " << t_idx << " not found" << std::endl;
+    return std::numeric_limits<double>::quiet_NaN();
   }
 
   double val = m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "value");
@@ -115,14 +122,11 @@ double hiros::opensim_ik::RTIKTool::getJointPosition(const std::string& t_jointN
   return val;
 }
 
-double hiros::opensim_ik::RTIKTool::getJointVelocity(const std::string& t_jointName, int t_idx, bool t_in_degrees)
+double hiros::opensim_ik::RTIKTool::getJointAngleVelocity(int t_idx, bool t_in_degrees) const
 {
-  if (m_coordinate_names.findIndex(t_jointName) == -1) {
-    std::cout << "Joint " << t_jointName << " not found" << std::endl;
+  if (t_idx < 0 || t_idx >= m_model->getCoordinateSet().getSize()) {
+    std::cout << "Joint angle with index " << t_idx << " not found" << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
-  }
-  if (t_idx == -1) {
-    t_idx = m_model->getCoordinateSet().getIndex(t_jointName);
   }
 
   double val = m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "speed");
@@ -135,22 +139,35 @@ double hiros::opensim_ik::RTIKTool::getJointVelocity(const std::string& t_jointN
   return val;
 }
 
-std::vector<double> hiros::opensim_ik::RTIKTool::getJointPositions(bool t_in_degrees)
+std::vector<std::string> hiros::opensim_ik::RTIKTool::getJointAngleNames() const
 {
-  std::vector<double> values;
-  values.reserve(static_cast<size_t>(m_coordinate_names.size()));
-  for (int i = 0; i < m_coordinate_names.size(); ++i) {
-    values.push_back(getJointPosition(m_coordinate_names.get(i), i, t_in_degrees));
+  auto n_joint_angles = m_model->getCoordinateSet().getSize();
+  std::vector<std::string> values;
+  values.reserve(static_cast<size_t>(n_joint_angles));
+  for (int ja_idx = 0; ja_idx < n_joint_angles; ++ja_idx) {
+    values.push_back(getJointAngleName(ja_idx));
   }
   return values;
 }
 
-std::vector<double> hiros::opensim_ik::RTIKTool::getJointVelocities(bool t_in_degrees)
+std::vector<double> hiros::opensim_ik::RTIKTool::getJointAnglePositions(bool t_in_degrees) const
 {
+  auto n_joint_angles = m_model->getCoordinateSet().getSize();
   std::vector<double> values;
-  values.reserve(static_cast<size_t>(m_coordinate_names.size()));
-  for (int i = 0; i < m_coordinate_names.size(); ++i) {
-    values.push_back(getJointVelocity(m_coordinate_names.get(i), i, t_in_degrees));
+  values.reserve(static_cast<size_t>(n_joint_angles));
+  for (int ja_idx = 0; ja_idx < n_joint_angles; ++ja_idx) {
+    values.push_back(getJointAnglePosition(ja_idx, t_in_degrees));
+  }
+  return values;
+}
+
+std::vector<double> hiros::opensim_ik::RTIKTool::getJointAngleVelocities(bool t_in_degrees) const
+{
+  auto n_joint_angles = m_model->getCoordinateSet().getSize();
+  std::vector<double> values;
+  values.reserve(static_cast<size_t>(n_joint_angles));
+  for (int ja_idx = 0; ja_idx < n_joint_angles; ++ja_idx) {
+    values.push_back(getJointAngleVelocity(ja_idx, t_in_degrees));
   }
   return values;
 }
@@ -173,8 +190,6 @@ void hiros::opensim_ik::RTIKTool::initialize()
     *m_model.get(), marker_refs, *m_orientation_refs.get(), coordinate_refs);
   m_ik_solver->setAccuracy(m_accuracy);
   m_ik_solver->assemble(*m_state);
-
-  m_model->getCoordinateSet().getNames(m_coordinate_names);
 
   if (m_use_visualizer) {
     m_model->updVisualizer().updSimbodyVisualizer().setWindowTitle(m_model->getName() + " - Inverse Kinematics");

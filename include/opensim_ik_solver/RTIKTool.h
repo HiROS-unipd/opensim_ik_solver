@@ -25,12 +25,12 @@ namespace hiros {
       bool runSingleFrameIK(const OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>& t_orientations,
                             const OpenSim::Set<OpenSim::OrientationWeight>* t_weights = nullptr);
 
-      inline SimTK::State getState() { return *m_state.get(); }
+      inline SimTK::State getState() const { return *m_state.get(); }
 
       std::string getJointAngleName(int t_idx) const;
       double getJointAnglePosition(int t_idx, bool t_in_degrees = false) const;
       double getJointAngleVelocity(int t_idx, bool t_in_degrees = false) const;
-      std::vector<std::string> getJointangleNames() const;
+      std::vector<std::string> getJointAngleNames() const;
       std::vector<double> getJointAnglePositions(bool t_in_degrees = false) const;
       std::vector<double> getJointAngleVelocities(bool t_in_degrees = false) const;
 

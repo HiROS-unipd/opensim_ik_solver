@@ -135,11 +135,7 @@ void hiros::opensim_ik::IKSolver::initializeIKTool()
 
 void hiros::opensim_ik::IKSolver::startConsumer()
 {
-  Consumer c{OrRefJointStateQueuePtr(&m_queue),
-             m_model,
-             m_ik_tool_params.accuracy,
-             m_general_params.sensor_to_opensim,
-             m_joint_names};
+  Consumer c{OrRefJointStateQueuePtr(&m_queue), m_model, m_ik_tool_params.accuracy, m_general_params.sensor_to_opensim};
 
   while (ros::ok()) {
     c.runSingleFrameIK();
@@ -242,7 +238,6 @@ void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_skeleton_msgs
     }
 
     initializeIKTool();
-    initializeJointStateNames();
     initializeThreads();
 
     m_initialized = true;
