@@ -55,8 +55,8 @@ void hiros::opensim_ik::IKSolver::getRosParams()
   m_nh.getParam("save_calibrated_model", m_imu_placer_params.save_calibrated_model);
   m_nh.getParam("visualize_calibration", m_imu_placer_params.visualize_calibration);
 
-  m_nh.getParam("accuracy", m_imu_ik_tool_params.accuracy);
-  m_nh.getParam("visualize_motion", m_imu_ik_tool_params.visualize_motion);
+  m_nh.getParam("accuracy", m_ik_tool_params.accuracy);
+  m_nh.getParam("visualize_motion", m_ik_tool_params.visualize_motion);
 }
 
 void hiros::opensim_ik::IKSolver::setupRos()
@@ -125,11 +125,11 @@ void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_skeleton_msgs::Skele
 
 void hiros::opensim_ik::IKSolver::initializeIKTool()
 {
-  m_rt_imu_ik_tool = std::make_unique<hiros::opensim_ik::RTIMUIKTool>(
-    m_model, m_imu_ik_tool_params.accuracy, m_general_params.sensor_to_opensim);
+  m_rt_ik_tool = std::make_unique<hiros::opensim_ik::RTIKTool>(
+    m_model, m_ik_tool_params.accuracy, m_general_params.sensor_to_opensim);
 
-  if (m_imu_ik_tool_params.visualize_motion) {
-    m_rt_imu_ik_tool->enableVisualizer();
+  if (m_ik_tool_params.visualize_motion) {
+    m_rt_ik_tool->enableVisualizer();
   }
 }
 
@@ -144,7 +144,7 @@ void hiros::opensim_ik::IKSolver::startConsumer()
 {
   Consumer c{OrRefJointStateQueuePtr(&m_queue),
              m_model,
-             m_imu_ik_tool_params.accuracy,
+             m_ik_tool_params.accuracy,
              m_general_params.sensor_to_opensim,
              m_joint_names};
 

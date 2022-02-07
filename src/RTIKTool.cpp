@@ -1,42 +1,42 @@
 // Internal dependencies
-#include "opensim_ik_solver/RTIMUIKTool.h"
+#include "opensim_ik_solver/RTIKTool.h"
 
-hiros::opensim_ik::RTIMUIKTool::RTIMUIKTool(const double& t_accuracy, const SimTK::Rotation& t_sensor_to_opensim)
+hiros::opensim_ik::RTIKTool::RTIKTool(const double& t_accuracy, const SimTK::Rotation& t_sensor_to_opensim)
   : m_initialized(false)
   , m_sensor_to_opensim(t_sensor_to_opensim)
   , m_accuracy(t_accuracy)
   , m_use_visualizer(false)
 {}
 
-hiros::opensim_ik::RTIMUIKTool::RTIMUIKTool(const OpenSim::Model& t_model,
-                                            const double& t_accuracy,
-                                            const SimTK::Rotation& t_sensor_to_opensim)
-  : RTIMUIKTool(t_accuracy, t_sensor_to_opensim)
+hiros::opensim_ik::RTIKTool::RTIKTool(const OpenSim::Model& t_model,
+                                      const double& t_accuracy,
+                                      const SimTK::Rotation& t_sensor_to_opensim)
+  : RTIKTool(t_accuracy, t_sensor_to_opensim)
 {
   setModel(t_model);
 }
 
-hiros::opensim_ik::RTIMUIKTool::~RTIMUIKTool() {}
+hiros::opensim_ik::RTIKTool::~RTIKTool() {}
 
-void hiros::opensim_ik::RTIMUIKTool::setModel(const OpenSim::Model& t_model)
+void hiros::opensim_ik::RTIKTool::setModel(const OpenSim::Model& t_model)
 {
   m_model = std::make_unique<OpenSim::Model>(t_model);
   m_model->finalizeFromProperties();
 }
 
-void hiros::opensim_ik::RTIMUIKTool::enableVisualizer()
+void hiros::opensim_ik::RTIKTool::enableVisualizer()
 {
   m_use_visualizer = true;
   m_model->setUseVisualizer(m_use_visualizer);
 }
 
-bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK(const OpenSim::OrientationsReference& t_orientation_refs)
+bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(const OpenSim::OrientationsReference& t_orientation_refs)
 {
   updateOrientationsReference(t_orientation_refs);
   return runSingleFrameIK();
 }
 
-bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK(
+bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(
   const OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>& t_orientations,
   const OpenSim::Set<OpenSim::OrientationWeight>* t_weights)
 {
@@ -44,13 +44,12 @@ bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK(
   return runSingleFrameIK();
 }
 
-void hiros::opensim_ik::RTIMUIKTool::updateOrientationsReference(
-  const OpenSim::OrientationsReference& t_orientation_refs)
+void hiros::opensim_ik::RTIKTool::updateOrientationsReference(const OpenSim::OrientationsReference& t_orientation_refs)
 {
   m_orientation_refs = std::make_shared<OpenSim::OrientationsReference>(t_orientation_refs);
 }
 
-void hiros::opensim_ik::RTIMUIKTool::updateOrientationsReference(
+void hiros::opensim_ik::RTIKTool::updateOrientationsReference(
   const OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>& t_orientations,
   const OpenSim::Set<OpenSim::OrientationWeight>* t_weights)
 {
@@ -64,7 +63,7 @@ void hiros::opensim_ik::RTIMUIKTool::updateOrientationsReference(
     std::make_shared<OpenSim::OrientationsReference>(OpenSim::OrientationsReference(orientations, t_weights));
 };
 
-bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK()
+bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
 {
   if (m_orientation_refs == nullptr) {
     return false;
@@ -97,7 +96,7 @@ bool hiros::opensim_ik::RTIMUIKTool::runSingleFrameIK()
   return true;
 }
 
-double hiros::opensim_ik::RTIMUIKTool::getJointPosition(const std::string& t_jointName, int t_idx, bool t_in_degrees)
+double hiros::opensim_ik::RTIKTool::getJointPosition(const std::string& t_jointName, int t_idx, bool t_in_degrees)
 {
   if (m_coordinate_names.findIndex(t_jointName) == -1) {
     std::cout << "Joint " << t_jointName << " not found" << std::endl;
@@ -116,7 +115,7 @@ double hiros::opensim_ik::RTIMUIKTool::getJointPosition(const std::string& t_joi
   return val;
 }
 
-double hiros::opensim_ik::RTIMUIKTool::getJointVelocity(const std::string& t_jointName, int t_idx, bool t_in_degrees)
+double hiros::opensim_ik::RTIKTool::getJointVelocity(const std::string& t_jointName, int t_idx, bool t_in_degrees)
 {
   if (m_coordinate_names.findIndex(t_jointName) == -1) {
     std::cout << "Joint " << t_jointName << " not found" << std::endl;
@@ -136,7 +135,7 @@ double hiros::opensim_ik::RTIMUIKTool::getJointVelocity(const std::string& t_joi
   return val;
 }
 
-std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointPositions(bool t_in_degrees)
+std::vector<double> hiros::opensim_ik::RTIKTool::getJointPositions(bool t_in_degrees)
 {
   std::vector<double> values;
   values.reserve(static_cast<size_t>(m_coordinate_names.size()));
@@ -146,7 +145,7 @@ std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointPositions(bool t_in_
   return values;
 }
 
-std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointVelocities(bool t_in_degrees)
+std::vector<double> hiros::opensim_ik::RTIKTool::getJointVelocities(bool t_in_degrees)
 {
   std::vector<double> values;
   values.reserve(static_cast<size_t>(m_coordinate_names.size()));
@@ -156,10 +155,10 @@ std::vector<double> hiros::opensim_ik::RTIMUIKTool::getJointVelocities(bool t_in
   return values;
 }
 
-void hiros::opensim_ik::RTIMUIKTool::initialize()
+void hiros::opensim_ik::RTIKTool::initialize()
 {
   if (!m_model) {
-    std::cerr << "RTIMUIKTool... Error: A model must be set before running IK." << std::endl;
+    std::cerr << "RTIKTool... Error: A model must be set before running IK." << std::endl;
     exit(EXIT_FAILURE);
   }
 

@@ -1,5 +1,5 @@
-#ifndef hiros_opensim_ik_solver_RTIMUIKTool_h
-#define hiros_opensim_ik_solver_RTIMUIKTool_h
+#ifndef hiros_opensim_ik_solver_RTIKTool_h
+#define hiros_opensim_ik_solver_RTIKTool_h
 
 // OpenSim dependencies
 #include "OpenSim/Simulation/InverseKinematicsSolver.h"
@@ -8,15 +8,15 @@
 namespace hiros {
   namespace opensim_ik {
 
-    class RTIMUIKTool
+    class RTIKTool
     {
     public:
-      RTIMUIKTool(const double& t_accuracy = 1e-4, const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
-      RTIMUIKTool(const OpenSim::Model& t_model,
-                  const double& t_accuracy = 1e-4,
-                  const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+      RTIKTool(const double& t_accuracy = 1e-4, const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+      RTIKTool(const OpenSim::Model& t_model,
+               const double& t_accuracy = 1e-4,
+               const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
 
-      virtual ~RTIMUIKTool();
+      virtual ~RTIKTool();
 
       void setModel(const OpenSim::Model& t_model);
       void enableVisualizer();

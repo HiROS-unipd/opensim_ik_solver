@@ -10,7 +10,7 @@
 
 // Internal dependencies
 #include "opensim_ik_solver/Queue.h"
-#include "opensim_ik_solver/RTIMUIKTool.h"
+#include "opensim_ik_solver/RTIKTool.h"
 #include "opensim_ik_solver/RTIMUPlacer.h"
 #include "opensim_ik_solver/utils.h"
 
@@ -41,7 +41,7 @@ namespace hiros {
       bool visualize_calibration;
     };
 
-    struct IMUIKToolParameters
+    struct IKToolParameters
     {
       double accuracy;
       bool visualize_motion;
@@ -81,11 +81,11 @@ namespace hiros {
 
       GeneralParameters m_general_params;
       IMUPlacerParameters m_imu_placer_params;
-      IMUIKToolParameters m_imu_ik_tool_params;
+      IKToolParameters m_ik_tool_params;
 
       OpenSim::Model m_model;
       std::unique_ptr<hiros::opensim_ik::RTIMUPlacer> m_rt_imu_placer;
-      std::unique_ptr<hiros::opensim_ik::RTIMUIKTool> m_rt_imu_ik_tool;
+      std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
 
       bool m_configured;
 

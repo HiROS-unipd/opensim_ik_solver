@@ -80,7 +80,7 @@ add_custom_target(additional_files_${PROJECT_NAME} SOURCES ${FILES_LIST})
 # packages don't collide add_executable(${PROJECT_NAME}_node
 add_executable(${PROJECT_NAME}_node src/main.cpp
                                     src/IKSolver.cpp
-                                    src/RTIMUIKTool.cpp
+                                    src/RTIKTool.cpp
                                     src/RTIMUPlacer.cpp
                                     src/Consumer.cpp
                                     src/Publisher.cpp)

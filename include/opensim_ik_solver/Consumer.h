@@ -9,7 +9,7 @@
 
 // Internal dependencies
 #include "opensim_ik_solver/Queue.h"
-#include "opensim_ik_solver/RTIMUIKTool.h"
+#include "opensim_ik_solver/RTIKTool.h"
 
 namespace hiros {
   namespace opensim_ik {
@@ -35,7 +35,7 @@ namespace hiros {
       std::shared_ptr<sensor_msgs::JointState> m_joint_state;
       std::vector<std::string> m_joint_names;
 
-      std::unique_ptr<hiros::opensim_ik::RTIMUIKTool> m_rt_imu_ik_tool;
+      std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
 
       OrRefJointStateQueuePtr m_queue_ptr;
     };
