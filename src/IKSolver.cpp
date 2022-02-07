@@ -133,13 +133,6 @@ void hiros::opensim_ik::IKSolver::initializeIKTool()
   }
 }
 
-void hiros::opensim_ik::IKSolver::initializeJointStateNames()
-{
-  for (auto& coord : m_model.getComponentList<OpenSim::Coordinate>()) {
-    m_joint_names.push_back(coord.getName());
-  }
-}
-
 void hiros::opensim_ik::IKSolver::startConsumer()
 {
   Consumer c{OrRefJointStateQueuePtr(&m_queue),

@@ -64,7 +64,6 @@ namespace hiros {
       void initializeThreads();
       void calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
       void initializeIKTool();
-      void initializeJointStateNames();
 
       void startConsumer();
       void startPublisher();
@@ -92,7 +91,6 @@ namespace hiros {
       ros::NodeHandle m_nh;
       std::string m_node_namespace;
       ros::Subscriber m_orientations_sub;
-      std::vector<std::string> m_joint_names;
       bool m_initialized;
 
       OrRefJointStateQueue m_queue;
