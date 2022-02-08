@@ -40,7 +40,8 @@ void hiros::opensim_ik::Consumer::runIK()
   OpenSim::MarkersReference marker_refs;
   OpenSim::OrientationsReference orientation_refs;
 
-  if (m_use_marker_positions) {
+  if (m_use_marker_positions
+      && m_skeleton_group->skeletons.front().markers.size() >= 4) { // At least 4 markers are required for the IK
     marker_refs = utils::toMarkersReference(*m_skeleton_group, m_marker_names, m_sensor_to_opensim);
   }
 
