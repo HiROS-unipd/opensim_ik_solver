@@ -5,35 +5,29 @@
 #include "ros/ros.h"
 #include "sensor_msgs/JointState.h"
 
-// OpenSim dependencies
-#include "OpenSim/Simulation/InverseKinematicsSolver.h"
-
-// Custom external dependencies
-#include "hiros_skeleton_msgs/SkeletonGroup.h"
-
 // Internal dependencies
-#include "Queue.h"
+#include "opensim_ik_solver/PublisherData.h"
+#include "opensim_ik_solver/Queue.h"
 
 namespace hiros {
   namespace opensim_ik {
 
-    typedef std::shared_ptr<Queue<hiros_skeleton_msgs::SkeletonGroup, sensor_msgs::JointState>>
-      SkelGroupJointStateQueuePtr;
-
     class Publisher
     {
     public:
-      Publisher(SkelGroupJointStateQueuePtr t_queue_ptr,
+      Publisher(SkelGroupToPubDataQueuePtr t_queue_ptr,
                 const ros::NodeHandle& t_nh,
-                const std::string& t_topic_name = "joint_state");
+                const std::string& t_joint_state_topic = "joint_state",
+                const std::string& t_skeleton_group_topic = "skeleton_group");
 
       void publish();
 
     private:
       ros::NodeHandle m_nh;
-      ros::Publisher m_pub;
+      ros::Publisher m_js_pub;
+      ros::Publisher m_sg_pub;
 
-      SkelGroupJointStateQueuePtr m_queue_ptr;
+      SkelGroupToPubDataQueuePtr m_queue_ptr;
     };
 
   } // namespace opensim_ik

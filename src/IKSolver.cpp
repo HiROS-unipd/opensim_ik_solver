@@ -137,7 +137,7 @@ void hiros::opensim_ik::IKSolver::initializeIKTool()
 void hiros::opensim_ik::IKSolver::startConsumer()
 {
   Consumer c{
-    SkelGroupJointStateQueuePtr(&m_queue), m_model, m_ik_tool_params.accuracy, m_general_params.sensor_to_opensim};
+    SkelGroupToPubDataQueuePtr(&m_queue), m_model, m_ik_tool_params.accuracy, m_general_params.sensor_to_opensim};
 
   while (ros::ok()) {
     c.runSingleFrameIK();
@@ -146,7 +146,7 @@ void hiros::opensim_ik::IKSolver::startConsumer()
 
 void hiros::opensim_ik::IKSolver::startPublisher()
 {
-  Publisher p{SkelGroupJointStateQueuePtr(&m_queue), m_nh};
+  Publisher p{SkelGroupToPubDataQueuePtr(&m_queue), m_nh};
 
   while (ros::ok()) {
     p.publish();

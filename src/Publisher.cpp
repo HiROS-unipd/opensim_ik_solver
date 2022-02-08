@@ -1,15 +1,20 @@
 #include "opensim_ik_solver/Publisher.h"
 
-hiros::opensim_ik::Publisher::Publisher(SkelGroupJointStateQueuePtr t_queue_ptr,
+hiros::opensim_ik::Publisher::Publisher(SkelGroupToPubDataQueuePtr t_queue_ptr,
                                         const ros::NodeHandle& t_nh,
-                                        const std::string& t_topic_name)
+                                        const std::string& t_joint_state_topic,
+                                        const std::string& t_skeleton_group_topic)
   : m_nh(t_nh)
   , m_queue_ptr(t_queue_ptr)
 {
-  m_pub = m_nh.advertise<sensor_msgs::JointState>(t_topic_name, 1);
+  m_js_pub = m_nh.advertise<sensor_msgs::JointState>(t_joint_state_topic, 1);
+  m_sg_pub = m_nh.advertise<hiros_skeleton_msgs::SkeletonGroup>(t_skeleton_group_topic, 1);
 }
 
 void hiros::opensim_ik::Publisher::publish()
 {
-  m_pub.publish(m_queue_ptr->pop());
+  const auto& pub_data = m_queue_ptr->pop();
+
+  m_js_pub.publish(pub_data.joint_angles);
+  m_sg_pub.publish(pub_data.skeleton_group);
 }

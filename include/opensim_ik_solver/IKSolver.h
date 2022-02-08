@@ -9,6 +9,7 @@
 #include "hiros_skeleton_msgs/SkeletonGroup.h"
 
 // Internal dependencies
+#include "opensim_ik_solver/PublisherData.h"
 #include "opensim_ik_solver/Queue.h"
 #include "opensim_ik_solver/RTIKTool.h"
 #include "opensim_ik_solver/RTIMUPlacer.h"
@@ -19,9 +20,6 @@
 
 namespace hiros {
   namespace opensim_ik {
-
-    typedef Queue<hiros_skeleton_msgs::SkeletonGroup, sensor_msgs::JointState> SkelGroupJointStateQueue;
-    typedef std::shared_ptr<SkelGroupJointStateQueue> SkelGroupJointStateQueuePtr;
 
     struct GeneralParameters
     {
@@ -85,7 +83,7 @@ namespace hiros {
       ros::Subscriber m_orientations_sub;
       bool m_initialized;
 
-      SkelGroupJointStateQueue m_queue;
+      SkelGroupToPubDataQueue m_queue;
     };
 
   } // namespace opensim_ik
