@@ -70,12 +70,12 @@ bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
   }
 
   if (m_orientation_refs->getTimes().empty()) {
-    std::cout << "Warning: the orientation reference is empty. Skipping" << std::endl;
+    std::cerr << "RTIKTool Warning: the orientation reference is empty. Skipping" << std::endl;
     return false;
   }
 
   if (m_orientation_refs->getTimes().size() > 1) {
-    std::cout << "Warning: the orientation reference contains multiple frames. Skipping" << std::endl;
+    std::cerr << "RTIKTool Warning: the orientation reference contains multiple frames. Skipping" << std::endl;
     return false;
   }
 
@@ -99,7 +99,7 @@ bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
 std::string hiros::opensim_ik::RTIKTool::getJointAngleName(int t_idx) const
 {
   if (t_idx < 0 || t_idx >= m_model->getCoordinateSet().getSize()) {
-    std::cout << "Joint angle with index " << t_idx << " not found" << std::endl;
+    std::cerr << "RTIKTool Warning: Joint angle with index " << t_idx << " not found" << std::endl;
     return std::string();
   }
 
@@ -109,7 +109,7 @@ std::string hiros::opensim_ik::RTIKTool::getJointAngleName(int t_idx) const
 double hiros::opensim_ik::RTIKTool::getJointAnglePosition(int t_idx, bool t_in_degrees) const
 {
   if (t_idx < 0 || t_idx >= m_model->getCoordinateSet().getSize()) {
-    std::cout << "Joint angle with index " << t_idx << " not found" << std::endl;
+    std::cerr << "RTIKTool Warning: Joint angle with index " << t_idx << " not found" << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
 
@@ -125,7 +125,7 @@ double hiros::opensim_ik::RTIKTool::getJointAnglePosition(int t_idx, bool t_in_d
 double hiros::opensim_ik::RTIKTool::getJointAngleVelocity(int t_idx, bool t_in_degrees) const
 {
   if (t_idx < 0 || t_idx >= m_model->getCoordinateSet().getSize()) {
-    std::cout << "Joint angle with index " << t_idx << " not found" << std::endl;
+    std::cerr << "RTIKTool Warning: Joint angle with index " << t_idx << " not found" << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
 
@@ -142,6 +142,10 @@ double hiros::opensim_ik::RTIKTool::getJointAngleVelocity(int t_idx, bool t_in_d
 std::vector<std::string> hiros::opensim_ik::RTIKTool::getJointAngleNames() const
 {
   auto n_joint_angles = m_model->getCoordinateSet().getSize();
+  if (n_joint_angles <= 0) {
+    std::cerr << "RTIKTool Warning: No joint angle names found" << std::endl;
+  }
+
   std::vector<std::string> values;
   values.reserve(static_cast<size_t>(n_joint_angles));
   for (int ja_idx = 0; ja_idx < n_joint_angles; ++ja_idx) {
@@ -153,6 +157,10 @@ std::vector<std::string> hiros::opensim_ik::RTIKTool::getJointAngleNames() const
 std::vector<double> hiros::opensim_ik::RTIKTool::getJointAnglePositions(bool t_in_degrees) const
 {
   auto n_joint_angles = m_model->getCoordinateSet().getSize();
+  if (n_joint_angles <= 0) {
+    std::cerr << "RTIKTool Warning: No joint angle positions found" << std::endl;
+  }
+
   std::vector<double> values;
   values.reserve(static_cast<size_t>(n_joint_angles));
   for (int ja_idx = 0; ja_idx < n_joint_angles; ++ja_idx) {
@@ -164,6 +172,10 @@ std::vector<double> hiros::opensim_ik::RTIKTool::getJointAnglePositions(bool t_i
 std::vector<double> hiros::opensim_ik::RTIKTool::getJointAngleVelocities(bool t_in_degrees) const
 {
   auto n_joint_angles = m_model->getCoordinateSet().getSize();
+  if (n_joint_angles <= 0) {
+    std::cerr << "RTIKTool Warning: No joint angle velocities found" << std::endl;
+  }
+
   std::vector<double> values;
   values.reserve(static_cast<size_t>(n_joint_angles));
   for (int ja_idx = 0; ja_idx < n_joint_angles; ++ja_idx) {
@@ -175,7 +187,7 @@ std::vector<double> hiros::opensim_ik::RTIKTool::getJointAngleVelocities(bool t_
 std::string hiros::opensim_ik::RTIKTool::getMarkerName(int t_idx) const
 {
   if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
-    std::cout << "Marker with index " << t_idx << " not found" << std::endl;
+    std::cerr << "RTIKTool Warning: Marker with index " << t_idx << " not found" << std::endl;
     return std::string();
   }
 
@@ -185,7 +197,7 @@ std::string hiros::opensim_ik::RTIKTool::getMarkerName(int t_idx) const
 SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerPosition(int t_idx) const
 {
   if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
-    std::cout << "Marker with index " << t_idx << " not found" << std::endl;
+    std::cerr << "RTIKTool Warning: Marker with index " << t_idx << " not found" << std::endl;
     return SimTK::Vec3(std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN());
@@ -197,7 +209,7 @@ SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerPosition(int t_idx) const
 SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerVelocity(int t_idx) const
 {
   if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
-    std::cout << "Marker with index " << t_idx << " not found" << std::endl;
+    std::cerr << "RTIKTool Warning: Marker with index " << t_idx << " not found" << std::endl;
     return SimTK::Vec3(std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN());
@@ -209,7 +221,7 @@ SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerVelocity(int t_idx) const
 SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerAcceleration(int t_idx) const
 {
   if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
-    std::cout << "Marker with index " << t_idx << " not found" << std::endl;
+    std::cerr << "RTIKTool Warning: Marker with index " << t_idx << " not found" << std::endl;
     return SimTK::Vec3(std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN());
@@ -221,6 +233,10 @@ SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerAcceleration(int t_idx) const
 std::vector<std::string> hiros::opensim_ik::RTIKTool::getMarkerNames() const
 {
   auto n_markers = m_model->getMarkerSet().getSize();
+  if (n_markers <= 0) {
+    std::cerr << "RTIKTool Warning: No marker names found" << std::endl;
+  }
+
   std::vector<std::string> values;
   values.reserve(static_cast<size_t>(n_markers));
   for (int mk_idx = 0; mk_idx < n_markers; ++mk_idx) {
@@ -232,6 +248,10 @@ std::vector<std::string> hiros::opensim_ik::RTIKTool::getMarkerNames() const
 std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerPositions() const
 {
   auto n_markers = m_model->getMarkerSet().getSize();
+  if (n_markers <= 0) {
+    std::cerr << "RTIKTool Warning: No marker positions found" << std::endl;
+  }
+
   std::vector<SimTK::Vec3> values;
   values.reserve(static_cast<size_t>(n_markers));
   for (int mk_idx = 0; mk_idx < n_markers; ++mk_idx) {
@@ -243,6 +263,10 @@ std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerPositions() const
 std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerVelocities() const
 {
   auto n_markers = m_model->getMarkerSet().getSize();
+  if (n_markers <= 0) {
+    std::cerr << "RTIKTool Warning: No marker velocities found" << std::endl;
+  }
+
   std::vector<SimTK::Vec3> values;
   values.reserve(static_cast<size_t>(n_markers));
   for (int mk_idx = 0; mk_idx < n_markers; ++mk_idx) {
@@ -254,6 +278,10 @@ std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerVelocities() cons
 std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerAccelerations() const
 {
   auto n_markers = m_model->getMarkerSet().getSize();
+  if (n_markers <= 0) {
+    std::cerr << "RTIKTool Warning: No marker acccelerations found" << std::endl;
+  }
+
   std::vector<SimTK::Vec3> values;
   values.reserve(static_cast<size_t>(n_markers));
   for (int mk_idx = 0; mk_idx < n_markers; ++mk_idx) {
@@ -265,7 +293,7 @@ std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerAccelerations() c
 void hiros::opensim_ik::RTIKTool::initialize()
 {
   if (!m_model) {
-    std::cerr << "RTIKTool... Error: A model must be set before running IK." << std::endl;
+    std::cerr << "RTIKTool Error: A model must be set before running IK" << std::endl;
     exit(EXIT_FAILURE);
   }
 
