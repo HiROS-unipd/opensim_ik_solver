@@ -20,8 +20,8 @@
 namespace hiros {
   namespace opensim_ik {
 
-    typedef Queue<OpenSim::OrientationsReference, sensor_msgs::JointState> OrRefJointStateQueue;
-    typedef std::shared_ptr<OrRefJointStateQueue> OrRefJointStateQueuePtr;
+    typedef Queue<hiros_skeleton_msgs::SkeletonGroup, sensor_msgs::JointState> SkelGroupJointStateQueue;
+    typedef std::shared_ptr<SkelGroupJointStateQueue> SkelGroupJointStateQueuePtr;
 
     struct GeneralParameters
     {
@@ -68,14 +68,6 @@ namespace hiros {
       void startConsumer();
       void startPublisher();
 
-      OpenSim::TimeSeriesTable_<SimTK::Quaternion>
-      toQuaternionsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const;
-      OpenSim::TimeSeriesTable_<SimTK::Rotation>
-      toRotationsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const;
-      OpenSim::Set<OpenSim::OrientationWeight>
-      toOrientationWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const;
-      OpenSim::OrientationsReference toOrientationsReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const;
-
       void orientationsCallback(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
 
       GeneralParameters m_general_params;
@@ -93,7 +85,7 @@ namespace hiros {
       ros::Subscriber m_orientations_sub;
       bool m_initialized;
 
-      OrRefJointStateQueue m_queue;
+      SkelGroupJointStateQueue m_queue;
     };
 
   } // namespace opensim_ik

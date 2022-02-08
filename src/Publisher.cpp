@@ -1,6 +1,6 @@
 #include "opensim_ik_solver/Publisher.h"
 
-hiros::opensim_ik::Publisher::Publisher(OrRefJointStateQueuePtr t_queue_ptr,
+hiros::opensim_ik::Publisher::Publisher(SkelGroupJointStateQueuePtr t_queue_ptr,
                                         const ros::NodeHandle& t_nh,
                                         const std::string& t_topic_name)
   : m_nh(t_nh)

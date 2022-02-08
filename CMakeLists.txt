@@ -83,7 +83,8 @@ add_executable(${PROJECT_NAME}_node src/main.cpp
                                     src/RTIKTool.cpp
                                     src/RTIMUPlacer.cpp
                                     src/Consumer.cpp
-                                    src/Publisher.cpp)
+                                    src/Publisher.cpp
+                                    src/utils.cpp)
 
 # Rename C++ executable without prefix The above recommended prefix causes long
 # target names, the following renames the target back to the shorter version for

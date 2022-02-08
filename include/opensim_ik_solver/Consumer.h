@@ -7,6 +7,9 @@
 // OpenSim dependencies
 #include "OpenSim/Simulation/InverseKinematicsSolver.h"
 
+// Custom external dependencies
+#include "hiros_skeleton_msgs/SkeletonGroup.h"
+
 // Internal dependencies
 #include "opensim_ik_solver/Queue.h"
 #include "opensim_ik_solver/RTIKTool.h"
@@ -14,12 +17,13 @@
 namespace hiros {
   namespace opensim_ik {
 
-    typedef std::shared_ptr<Queue<OpenSim::OrientationsReference, sensor_msgs::JointState>> OrRefJointStateQueuePtr;
+    typedef std::shared_ptr<Queue<hiros_skeleton_msgs::SkeletonGroup, sensor_msgs::JointState>>
+      SkelGroupJointStateQueuePtr;
 
     class Consumer
     {
     public:
-      Consumer(OrRefJointStateQueuePtr t_queue_ptr,
+      Consumer(SkelGroupJointStateQueuePtr t_queue_ptr,
                const OpenSim::Model& t_model,
                const double& t_accuracy = 1e-4,
                const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
@@ -30,12 +34,12 @@ namespace hiros {
       void runIK();
 
       std::shared_ptr<bool> m_processed;
-      std::shared_ptr<OpenSim::OrientationsReference> m_orientations_reference;
+      std::shared_ptr<hiros_skeleton_msgs::SkeletonGroup> m_skeleton_group;
       std::shared_ptr<sensor_msgs::JointState> m_joint_state;
 
       std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
 
-      OrRefJointStateQueuePtr m_queue_ptr;
+      SkelGroupJointStateQueuePtr m_queue_ptr;
     };
 
   } // namespace opensim_ik

@@ -5,6 +5,7 @@
 #include "opensim_ik_solver/Consumer.h"
 #include "opensim_ik_solver/IKSolver.h"
 #include "opensim_ik_solver/Publisher.h"
+#include "opensim_ik_solver/utils.h"
 
 hiros::opensim_ik::IKSolver::IKSolver()
   : m_configured(false)
@@ -105,7 +106,7 @@ void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_skeleton_msgs::Skele
 {
   ROS_INFO_STREAM("OpenSim IK Solver... Placing IMUs on model");
 
-  m_rt_imu_placer->runCalibration(toQuaternionsTable(t_msg));
+  m_rt_imu_placer->runCalibration(utils::toQuaternionsTable(t_msg));
 
   m_model = m_rt_imu_placer->getCalibratedModel();
   m_model.finalizeFromProperties();
@@ -135,7 +136,8 @@ void hiros::opensim_ik::IKSolver::initializeIKTool()
 
 void hiros::opensim_ik::IKSolver::startConsumer()
 {
-  Consumer c{OrRefJointStateQueuePtr(&m_queue), m_model, m_ik_tool_params.accuracy, m_general_params.sensor_to_opensim};
+  Consumer c{
+    SkelGroupJointStateQueuePtr(&m_queue), m_model, m_ik_tool_params.accuracy, m_general_params.sensor_to_opensim};
 
   while (ros::ok()) {
     c.runSingleFrameIK();
@@ -144,87 +146,11 @@ void hiros::opensim_ik::IKSolver::startConsumer()
 
 void hiros::opensim_ik::IKSolver::startPublisher()
 {
-  Publisher p{OrRefJointStateQueuePtr(&m_queue), m_nh};
+  Publisher p{SkelGroupJointStateQueuePtr(&m_queue), m_nh};
 
   while (ros::ok()) {
     p.publish();
   }
-}
-
-OpenSim::TimeSeriesTable_<SimTK::Quaternion>
-hiros::opensim_ik::IKSolver::toQuaternionsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const
-{
-  // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
-  // NB: currently require to have n_orientations = max_orientations for each orientation group
-
-  unsigned long n_cols = t_msg.skeletons.front().links.size();
-
-  std::vector<double> time{t_msg.header.stamp.toSec()};
-
-  SimTK::Matrix_<SimTK::Quaternion> quaternion_matrix(1, static_cast<int>(n_cols), SimTK::Quaternion());
-  std::vector<std::string> imu_labels;
-  imu_labels.reserve(n_cols);
-
-  int col = -1;
-  for (const auto& link : t_msg.skeletons.front().links) {
-    quaternion_matrix.updElt(0, ++col) = SimTK::Quaternion(link.center.pose.orientation.w,
-                                                           link.center.pose.orientation.x,
-                                                           link.center.pose.orientation.y,
-                                                           link.center.pose.orientation.z);
-    imu_labels.push_back(link.name);
-  }
-
-  return OpenSim::TimeSeriesTable_<SimTK::Quaternion>(time, quaternion_matrix, imu_labels);
-}
-
-OpenSim::TimeSeriesTable_<SimTK::Rotation>
-hiros::opensim_ik::IKSolver::toRotationsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const
-{
-  // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
-  // NB: currently require to have n_orientations = max_orientations for each orientation group
-
-  unsigned long n_cols = t_msg.skeletons.front().links.size();
-
-  std::vector<double> time{t_msg.header.stamp.toSec()};
-
-  SimTK::Matrix_<SimTK::Rotation> rotation_matrix(1, static_cast<int>(n_cols), SimTK::Rotation());
-  std::vector<std::string> imu_labels;
-  imu_labels.reserve(n_cols);
-
-  int col = -1;
-  for (const auto& link : t_msg.skeletons.front().links) {
-    rotation_matrix.updElt(0, ++col) = SimTK::Rotation(SimTK::Quaternion(link.center.pose.orientation.w,
-                                                                         link.center.pose.orientation.x,
-                                                                         link.center.pose.orientation.y,
-                                                                         link.center.pose.orientation.z));
-    imu_labels.push_back(link.name);
-  }
-
-  return OpenSim::TimeSeriesTable_<SimTK::Rotation>(time, rotation_matrix, imu_labels);
-}
-
-OpenSim::Set<OpenSim::OrientationWeight>
-hiros::opensim_ik::IKSolver::toOrientationWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const
-{
-  // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
-  // NB: currently require to have n_orientations = max_orientations for each orientation group
-
-  OpenSim::Set<OpenSim::OrientationWeight> weights;
-  for (const auto& link : t_msg.skeletons.front().links) {
-    weights.insert(weights.getSize(), OpenSim::OrientationWeight(link.name, link.confidence));
-  }
-
-  return weights;
-}
-
-OpenSim::OrientationsReference
-hiros::opensim_ik::IKSolver::toOrientationsReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg) const
-{
-  // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
-  // NB: currently require to have n_orientations = max_orientations for each orientation group
-
-  auto weights = toOrientationWeightSet(t_msg);
-  return OpenSim::OrientationsReference(toRotationsTable(t_msg), &weights);
 }
 
 void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_skeleton_msgs::SkeletonGroup& t_msg)
@@ -243,6 +169,6 @@ void hiros::opensim_ik::IKSolver::orientationsCallback(const hiros_skeleton_msgs
     m_initialized = true;
   }
   else {
-    m_queue.push(toOrientationsReference(t_msg));
+    m_queue.push(t_msg);
   }
 }
