@@ -14,7 +14,6 @@
   <arg name="sensor_to_opensim_rotation_z" default="0"          />
 
   <!-- IMU Placer Parameters -->
-  <arg name="model_path"                 default=""      />
   <arg name="perform_model_calibration"  default="true"  />
   <arg name="perform_heading_correction" default="false" />
   <arg name="base_imu_label"             default=""      />
@@ -23,8 +22,10 @@
   <arg name="visualize_calibration"      default="false" />
 
   <!-- IK Tool Parameters -->
+  <arg name="model_path"            default=""                  />
   <arg name="accuracy"              default="1e-4"              />
-  <arg name="visualize_motion"      default="false"             />
+  <arg name="use_marker_positions"  default="false"             />
+  <arg name="use_link_orientations" default="false"             />
 
 
   <node pkg="hiros_opensim_ik_solver" type="hiros_opensim_ik_solver" name="$(arg node_name)" output="screen" required="$(arg node_required)">
@@ -40,7 +41,6 @@
     <param name="sensor_to_opensim_rotation_z" type="double" value="$(arg sensor_to_opensim_rotation_z)" />
 
     <!-- IMU Placer Parameters -->
-    <param name="model_path"                 type="str"  value="$(arg model_path)"                 />
     <param name="perform_model_calibration"  type="bool" value="$(arg perform_model_calibration)"  />
     <param name="perform_heading_correction" type="bool" value="$(arg perform_heading_correction)" />
     <param name="base_imu_label"             type="str"  value="$(arg base_imu_label)"             />
@@ -49,7 +49,9 @@
     <param name="visualize_calibration"      type="bool" value="$(arg visualize_calibration)"      />
 
     <!-- IK Tool Parameters -->
-    <param name="accuracy"                     type="double" value="$(arg accuracy)"         />
-    <param name="visualize_motion"             type="bool"   value="$(arg visualize_motion)" />
+    <param name="model_path"            type="str"  value="$(arg model_path)"             />
+    <param name="accuracy"              type="double" value="$(arg accuracy)"             />
+    <param name="use_marker_positions"  type="bool"   value="$(arg use_marker_positions)" />
+    <param name="use_link_orientations" type="bool"   value="$(arg use_link_orientations)"/>
   </node>
 </launch>

@@ -15,7 +15,6 @@
     <arg name="sensor_to_opensim_rotation_z" value="0"           />
 
     <!-- IMU Placer Parameters -->
-    <arg name="model_path"                 value="$(find hiros_opensim_ik_solver)/models/Rajagopal2015_edited.osim" />
     <arg name="perform_model_calibration"  value="true"       />
     <arg name="perform_heading_correction" value="true"       />
     <arg name="base_imu_label"             value="pelvis_imu" />
@@ -24,7 +23,9 @@
     <arg name="visualize_calibration"      value="true"       />
 
     <!-- IK Tool Parameters -->
-    <arg name="accuracy"         value="1e-4" />
-    <arg name="visualize_motion" value="true" />
+    <arg name="model_path"            value="$(find hiros_opensim_ik_solver)/models/Rajagopal2015_edited.osim" />
+    <arg name="accuracy"              value="1e-4"  />
+    <arg name="use_marker_positions"  value="false" />
+    <arg name="use_link_orientations" value="true"  />
   </include>
 </launch>

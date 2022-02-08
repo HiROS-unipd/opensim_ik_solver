@@ -11,19 +11,20 @@ namespace hiros {
     class RTIKTool
     {
     public:
-      RTIKTool(const double& t_accuracy = 1e-4, const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+      RTIKTool(bool t_use_marker_positions, bool t_use_link_orientations, const double& t_accuracy = 1e-4);
       RTIKTool(const OpenSim::Model& t_model,
-               const double& t_accuracy = 1e-4,
-               const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+               bool t_use_marker_positions,
+               bool t_use_link_orientations,
+               const double& t_accuracy = 1e-4);
 
       virtual ~RTIKTool();
 
       void setModel(const OpenSim::Model& t_model);
       void enableVisualizer();
 
+      bool runSingleFrameIK(const OpenSim::MarkersReference& t_marker_refs,
+                            const OpenSim::OrientationsReference& t_orientation_refs = {});
       bool runSingleFrameIK(const OpenSim::OrientationsReference& t_orientation_refs);
-      bool runSingleFrameIK(const OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>& t_orientations,
-                            const OpenSim::Set<OpenSim::OrientationWeight>* t_weights = nullptr);
 
       inline SimTK::State getState() const { return *m_state.get(); }
 
@@ -44,21 +45,23 @@ namespace hiros {
       std::vector<SimTK::Vec3> getMarkerAccelerations() const;
 
     private:
-      void updateOrientationsReference(const OpenSim::OrientationsReference& t_orientation_refs);
-      void updateOrientationsReference(const OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>& t_orientations,
-                                       const OpenSim::Set<OpenSim::OrientationWeight>* t_weights = nullptr);
+      void updateReference(const OpenSim::MarkersReference& t_marker_refs,
+                           const OpenSim::OrientationsReference& t_orientation_refs = {});
+      void updateReference(const OpenSim::OrientationsReference& t_orientation_refs);
 
       bool runSingleFrameIK();
 
       void initialize();
 
       bool m_initialized;
+      bool m_use_marker_positions{false};
+      bool m_use_link_orientations{false};
       std::unique_ptr<OpenSim::Model> m_model;
 
-      SimTK::Rotation m_sensor_to_opensim;
       double m_accuracy;
       bool m_use_visualizer;
 
+      std::shared_ptr<OpenSim::MarkersReference> m_marker_refs;
       std::shared_ptr<OpenSim::OrientationsReference> m_orientation_refs;
 
       std::unique_ptr<OpenSim::InverseKinematicsSolver> m_ik_solver;

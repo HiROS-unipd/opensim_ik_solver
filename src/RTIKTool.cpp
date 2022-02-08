@@ -1,17 +1,21 @@
 // Internal dependencies
 #include "opensim_ik_solver/RTIKTool.h"
 
-hiros::opensim_ik::RTIKTool::RTIKTool(const double& t_accuracy, const SimTK::Rotation& t_sensor_to_opensim)
+hiros::opensim_ik::RTIKTool::RTIKTool(bool t_use_marker_positions,
+                                      bool t_use_link_orientations,
+                                      const double& t_accuracy)
   : m_initialized(false)
-  , m_sensor_to_opensim(t_sensor_to_opensim)
+  , m_use_marker_positions(t_use_marker_positions)
+  , m_use_link_orientations(t_use_link_orientations)
   , m_accuracy(t_accuracy)
   , m_use_visualizer(false)
 {}
 
 hiros::opensim_ik::RTIKTool::RTIKTool(const OpenSim::Model& t_model,
-                                      const double& t_accuracy,
-                                      const SimTK::Rotation& t_sensor_to_opensim)
-  : RTIKTool(t_accuracy, t_sensor_to_opensim)
+                                      bool t_use_marker_positions,
+                                      bool t_use_link_orientations,
+                                      const double& t_accuracy)
+  : RTIKTool(t_use_marker_positions, t_use_link_orientations, t_accuracy)
 {
   setModel(t_model);
 }
@@ -30,67 +34,87 @@ void hiros::opensim_ik::RTIKTool::enableVisualizer()
   m_model->setUseVisualizer(m_use_visualizer);
 }
 
+bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(const OpenSim::MarkersReference& t_marker_refs,
+                                                   const OpenSim::OrientationsReference& t_orientation_refs)
+{
+  updateReference(t_marker_refs, t_orientation_refs);
+  return runSingleFrameIK();
+}
+
 bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(const OpenSim::OrientationsReference& t_orientation_refs)
 {
-  updateOrientationsReference(t_orientation_refs);
+  updateReference(t_orientation_refs);
   return runSingleFrameIK();
 }
 
-bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(
-  const OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>& t_orientations,
-  const OpenSim::Set<OpenSim::OrientationWeight>* t_weights)
+void hiros::opensim_ik::RTIKTool::updateReference(const OpenSim::MarkersReference& t_marker_refs,
+                                                  const OpenSim::OrientationsReference& t_orientation_refs)
 {
-  updateOrientationsReference(t_orientations, t_weights);
-  return runSingleFrameIK();
+  m_marker_refs = std::make_shared<OpenSim::MarkersReference>(t_marker_refs);
+  m_orientation_refs = std::make_shared<OpenSim::OrientationsReference>(t_orientation_refs);
 }
 
-void hiros::opensim_ik::RTIKTool::updateOrientationsReference(const OpenSim::OrientationsReference& t_orientation_refs)
+void hiros::opensim_ik::RTIKTool::updateReference(const OpenSim::OrientationsReference& t_orientation_refs)
 {
   m_orientation_refs = std::make_shared<OpenSim::OrientationsReference>(t_orientation_refs);
 }
 
-void hiros::opensim_ik::RTIKTool::updateOrientationsReference(
-  const OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>>& t_orientations,
-  const OpenSim::Set<OpenSim::OrientationWeight>* t_weights)
-{
-  OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>> orientations = t_orientations;
-
-  for (int i = 0; i < static_cast<int>(orientations.getNumColumns()); ++i) {
-    orientations.updRowAtIndex(0)[i] = m_sensor_to_opensim * orientations.updRowAtIndex(0)[i];
-  }
-
-  m_orientation_refs =
-    std::make_shared<OpenSim::OrientationsReference>(OpenSim::OrientationsReference(orientations, t_weights));
-};
-
 bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
 {
-  if (m_orientation_refs == nullptr) {
-    return false;
+  if (m_use_marker_positions) {
+    if (m_marker_refs == nullptr) {
+      return false;
+    }
+
+    if (m_marker_refs->getNumFrames() == 0) {
+      std::cerr << "RTIKTool Warning: the marker reference is empty. Skipping" << std::endl;
+      return false;
+    }
+
+    if (m_marker_refs->getNumFrames() > 1) {
+      std::cerr << "RTIKTool Warning: the marker reference contains multiple frames. Skipping" << std::endl;
+      return false;
+    }
+
+    if (!m_initialized) {
+      initialize();
+    }
+
+    m_ik_solver->updateMarkersReference(m_marker_refs);
+    m_state->updTime() = m_marker_refs->getValidTimeRange().get(0);
   }
 
-  if (m_orientation_refs->getTimes().empty()) {
-    std::cerr << "RTIKTool Warning: the orientation reference is empty. Skipping" << std::endl;
-    return false;
+  if (m_use_link_orientations) {
+    if (m_orientation_refs == nullptr) {
+      return false;
+    }
+
+    if (m_orientation_refs->getTimes().empty()) {
+      std::cerr << "RTIKTool Warning: the orientation reference is empty. Skipping" << std::endl;
+      return false;
+    }
+
+    if (m_orientation_refs->getTimes().size() > 1) {
+      std::cerr << "RTIKTool Warning: the orientation reference contains multiple frames. Skipping" << std::endl;
+      return false;
+    }
+
+    if (!m_initialized) {
+      initialize();
+    }
+
+    m_ik_solver->updateOrientationsReference(m_orientation_refs);
+    m_state->updTime() = m_orientation_refs->getTimes().front();
   }
 
-  if (m_orientation_refs->getTimes().size() > 1) {
-    std::cerr << "RTIKTool Warning: the orientation reference contains multiple frames. Skipping" << std::endl;
-    return false;
-  }
-
-  if (!m_initialized) {
-    initialize();
-  }
-
-  m_ik_solver->updateOrientationsReference(m_orientation_refs);
-  m_state->updTime() = m_orientation_refs->getTimes().front();
   m_ik_solver->track(*m_state);
+  m_model->realizeReport(*m_state);
 
   if (m_use_visualizer) {
     m_model->getVisualizer().show(*m_state);
   }
 
+  m_marker_refs.reset();
   m_orientation_refs.reset();
 
   return true;
@@ -299,13 +323,23 @@ void hiros::opensim_ik::RTIKTool::initialize()
 
   m_state = std::make_unique<SimTK::State>(m_model->initSystem());
   *m_state = m_model->initSystem();
-  m_state->updTime() = m_orientation_refs->getTimes().front();
 
-  OpenSim::MarkersReference marker_refs;
+  std::shared_ptr<OpenSim::MarkersReference> marker_refs;
+  std::shared_ptr<OpenSim::OrientationsReference> orientation_refs;
+
+  if (m_use_marker_positions) {
+    m_state->updTime() = m_marker_refs->getValidTimeRange().get(0);
+    marker_refs = m_marker_refs;
+  }
+  if (m_use_link_orientations) {
+    m_state->updTime() = m_orientation_refs->getTimes().front();
+    orientation_refs = m_orientation_refs;
+  }
+
   SimTK::Array_<OpenSim::CoordinateReference> coordinate_refs;
 
-  m_ik_solver = std::make_unique<OpenSim::InverseKinematicsSolver>(
-    *m_model.get(), marker_refs, *m_orientation_refs.get(), coordinate_refs);
+  m_ik_solver =
+    std::make_unique<OpenSim::InverseKinematicsSolver>(*m_model.get(), marker_refs, orientation_refs, coordinate_refs);
   m_ik_solver->setAccuracy(m_accuracy);
   m_ik_solver->assemble(*m_state);
 

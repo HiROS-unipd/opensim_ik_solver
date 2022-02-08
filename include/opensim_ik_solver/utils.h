@@ -3,6 +3,7 @@
 
 // OpenSim dependencies
 #include "OpenSim/Common/TimeSeriesTable.h"
+#include "OpenSim/Simulation/MarkersReference.h"
 #include "OpenSim/Simulation/OrientationsReference.h"
 
 // Custom external dependencies
@@ -23,11 +24,25 @@ namespace hiros {
         return r;
       }
 
-      OpenSim::TimeSeriesTable_<SimTK::Quaternion> toQuaternionsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
-      OpenSim::TimeSeriesTable_<SimTK::Rotation> toRotationsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
+      OpenSim::TimeSeriesTable_<SimTK::Vec3>
+      toVec3Table(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                  const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+
+      OpenSim::Set<OpenSim::MarkerWeight> toMarkerWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
+      OpenSim::MarkersReference toMarkersReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                                                   const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+
+      OpenSim::TimeSeriesTable_<SimTK::Quaternion>
+      toQuaternionsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                         const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+      OpenSim::TimeSeriesTable_<SimTK::Rotation>
+      toRotationsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                       const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
 
       OpenSim::Set<OpenSim::OrientationWeight> toOrientationWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
-      OpenSim::OrientationsReference toOrientationsReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
+      OpenSim::OrientationsReference
+      toOrientationsReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                              const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
 
     } // namespace utils
   } // namespace opensim_ik

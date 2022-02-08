@@ -23,6 +23,8 @@ namespace hiros {
     public:
       Consumer(SkelGroupToPubDataQueuePtr t_queue_ptr,
                const OpenSim::Model& t_model,
+               bool t_use_marker_positions,
+               bool t_use_link_orientations,
                const double& t_accuracy = 1e-4,
                const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
 
@@ -39,6 +41,10 @@ namespace hiros {
       std::shared_ptr<PublisherData> m_pub_data;
 
       std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
+
+      bool m_use_marker_positions;
+      bool m_use_link_orientations;
+      SimTK::Rotation m_sensor_to_opensim;
 
       SkelGroupToPubDataQueuePtr m_queue_ptr;
     };

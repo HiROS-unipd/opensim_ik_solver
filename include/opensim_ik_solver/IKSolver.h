@@ -35,8 +35,6 @@ namespace hiros {
 
     struct IMUPlacerParameters
     {
-      std::string model_path;
-
       bool perform_model_calibration;
       bool perform_heading_correction;
 
@@ -49,9 +47,11 @@ namespace hiros {
 
     struct IKToolParameters
     {
+      std::string model_path;
       double accuracy;
 
-      bool visualize_motion;
+      bool use_marker_positions;
+      bool use_link_orientations;
     };
 
     class IKSolver
@@ -67,15 +67,14 @@ namespace hiros {
       void getRosParams();
       void setupRos();
       void initializeIMUPlacer();
-      void initializeModel();
+      void initializeModel(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
       void initializeThreads();
       void calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
-      void initializeIKTool();
 
       void startConsumer();
       void startPublisher();
 
-      void orientationsCallback(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
+      void callback(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
 
       GeneralParameters m_general_params;
       IMUPlacerParameters m_imu_placer_params;
