@@ -20,6 +20,10 @@ hiros::opensim_ik::Consumer::Consumer(SkelGroupToPubDataQueuePtr t_queue_ptr,
   , m_sensor_to_opensim(t_sensor_to_opensim)
   , m_queue_ptr(t_queue_ptr)
 {
+  OpenSim::Array<std::string> marker_names;
+  t_model.getMarkerSet().getNames(marker_names);
+  m_marker_names = utils::toStdVector(marker_names);
+
   m_rt_ik_tool =
     std::make_unique<hiros::opensim_ik::RTIKTool>(t_model, t_use_marker_positions, t_use_link_orientations, t_accuracy);
 }
@@ -36,12 +40,8 @@ void hiros::opensim_ik::Consumer::runIK()
   OpenSim::MarkersReference marker_refs;
   OpenSim::OrientationsReference orientation_refs;
 
-  // N.B. Currently requires n_markers = max_markers and n_links = max_links
-
   if (m_use_marker_positions) {
-    if (m_skeleton_group->skeletons.front().markers.size() == m_skeleton_group->skeletons.front().max_markers) {
-      marker_refs = utils::toMarkersReference(*m_skeleton_group, m_sensor_to_opensim);
-    }
+    marker_refs = utils::toMarkersReference(*m_skeleton_group, m_marker_names, m_sensor_to_opensim);
   }
 
   if (m_use_link_orientations) {

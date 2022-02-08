@@ -24,12 +24,26 @@ namespace hiros {
         return r;
       }
 
+      template <class T>
+      std::vector<T> toStdVector(OpenSim::Array<T> a)
+      {
+        std::vector<T> r;
+        r.reserve(a.size());
+        for (int i = 0; i < a.size(); ++i) {
+          r.push_back(a[i]);
+        }
+        return r;
+      }
+
       OpenSim::TimeSeriesTable_<SimTK::Vec3>
       toVec3Table(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                  const std::vector<std::string> t_marker_names,
                   const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
 
-      OpenSim::Set<OpenSim::MarkerWeight> toMarkerWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
+      OpenSim::Set<OpenSim::MarkerWeight> toMarkerWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                                                            const std::vector<std::string> t_marker_names);
       OpenSim::MarkersReference toMarkersReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                                                   const std::vector<std::string> t_marker_names,
                                                    const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
 
       OpenSim::TimeSeriesTable_<SimTK::Quaternion>

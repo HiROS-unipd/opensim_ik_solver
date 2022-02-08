@@ -6,11 +6,12 @@
 
 OpenSim::TimeSeriesTable_<SimTK::Vec3>
 hiros::opensim_ik::utils::toVec3Table(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                                      const std::vector<std::string> t_marker_names,
                                       const SimTK::Rotation& t_sensor_to_opensim)
 {
   // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
 
-  unsigned long n_cols = t_msg.skeletons.front().markers.size();
+  unsigned long n_cols = t_marker_names.size();
 
   std::vector<double> time{t_msg.skeletons.front().src_time.toSec()};
 
@@ -19,36 +20,51 @@ hiros::opensim_ik::utils::toVec3Table(const hiros_skeleton_msgs::SkeletonGroup& 
   marker_labels.reserve(n_cols);
 
   int col = -1;
-  for (const auto& marker : t_msg.skeletons.front().markers) {
-    vec3_matrix.updElt(0, ++col) =
-      t_sensor_to_opensim
-      * SimTK::Vec3(marker.center.pose.position.x, marker.center.pose.position.y, marker.center.pose.position.z);
+  for (const auto& name : t_marker_names) {
+    auto mk_it = std::find_if(t_msg.skeletons.front().markers.begin(),
+                              t_msg.skeletons.front().markers.end(),
+                              [&](const auto& mk) { return mk.name == name; });
 
-    marker_labels.push_back(marker.name);
+    auto mk_pos =
+      (mk_it != t_msg.skeletons.front().markers.end())
+        ? t_sensor_to_opensim
+            * SimTK::Vec3(mk_it->center.pose.position.x, mk_it->center.pose.position.y, mk_it->center.pose.position.z)
+        : SimTK::Vec3();
+
+    vec3_matrix.updElt(0, ++col) = mk_pos;
+    marker_labels.push_back(name);
   }
 
   return OpenSim::TimeSeriesTable_<SimTK::Vec3>(time, vec3_matrix, marker_labels);
 }
 
 OpenSim::Set<OpenSim::MarkerWeight>
-hiros::opensim_ik::utils::toMarkerWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg)
+hiros::opensim_ik::utils::toMarkerWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                                            const std::vector<std::string> t_marker_names)
 {
   // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
 
   OpenSim::Set<OpenSim::MarkerWeight> weights;
-  for (const auto& marker : t_msg.skeletons.front().markers) {
-    weights.insert(weights.getSize(), OpenSim::MarkerWeight(marker.name, marker.confidence));
+  for (const auto& name : t_marker_names) {
+    auto mk_it = std::find_if(t_msg.skeletons.front().markers.begin(),
+                              t_msg.skeletons.front().markers.end(),
+                              [&](const auto& mk) { return mk.name == name; });
+
+    double confidence = (mk_it != t_msg.skeletons.front().markers.end()) ? mk_it->confidence : 0;
+    weights.insert(weights.getSize(), OpenSim::MarkerWeight(name, confidence));
   }
 
   return weights;
 }
 
 OpenSim::MarkersReference hiros::opensim_ik::utils::toMarkersReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                                                                       const std::vector<std::string> t_marker_names,
                                                                        const SimTK::Rotation& t_sensor_to_opensim)
 {
   // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
 
-  return OpenSim::MarkersReference(toVec3Table(t_msg, t_sensor_to_opensim), toMarkerWeightSet(t_msg));
+  return OpenSim::MarkersReference(toVec3Table(t_msg, t_marker_names, t_sensor_to_opensim),
+                                   toMarkerWeightSet(t_msg, t_marker_names));
 }
 
 OpenSim::TimeSeriesTable_<SimTK::Quaternion>

@@ -46,6 +46,8 @@ namespace hiros {
       bool m_use_link_orientations;
       SimTK::Rotation m_sensor_to_opensim;
 
+      std::vector<std::string> m_marker_names;
+
       SkelGroupToPubDataQueuePtr m_queue_ptr;
     };
 
