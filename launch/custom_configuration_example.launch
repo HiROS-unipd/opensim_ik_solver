@@ -1,13 +1,15 @@
 <?xml version="1.0"?>
 
 <launch>
-  <include file="$(find hiros_opensim_ik_solver)/launch/hiros_opensim_ik_solver_default.launch">
+  <include file="$(find hiros_opensim_ik_solver)/launch/default.launch">
     <arg name="node_required" value="true"    />
     <arg name="node_name"     value="opensim" />
 
     <!-- General Parameters -->
     <arg name="n_threads"                    value="8"           />
-    <arg name="input_topic"                  value="/xsens/data" />
+    <arg name="input_topic"                  value="/skel_group" />
+    <arg name="out_joint_state_topic"        value="/opensim/js" />
+    <arg name="out_skeleton_group_topic"     value="/opensim/sg" />
     <arg name="sensor_to_opensim_rotation_x" value="-1.5707963"  />
     <arg name="sensor_to_opensim_rotation_y" value="0"           />
     <arg name="sensor_to_opensim_rotation_z" value="0"           />

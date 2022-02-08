@@ -36,6 +36,8 @@ void hiros::opensim_ik::IKSolver::getRosParams()
 
   m_nh.getParam("n_threads", m_general_params.n_threads);
   m_nh.getParam("input_topic", m_general_params.input_topic);
+  m_nh.getParam("out_joint_state_topic", m_general_params.out_joint_state_topic);
+  m_nh.getParam("out_skeleton_group_topic", m_general_params.out_skeleton_group_topic);
   double sensor_to_opensim_x, sensor_to_opensim_y, sensor_to_opensim_z;
   m_nh.getParam("sensor_to_opensim_rotation_x", sensor_to_opensim_x);
   m_nh.getParam("sensor_to_opensim_rotation_y", sensor_to_opensim_y);
@@ -146,7 +148,10 @@ void hiros::opensim_ik::IKSolver::startConsumer()
 
 void hiros::opensim_ik::IKSolver::startPublisher()
 {
-  Publisher p{SkelGroupToPubDataQueuePtr(&m_queue), m_nh};
+  Publisher p{SkelGroupToPubDataQueuePtr(&m_queue),
+              m_nh,
+              m_general_params.out_joint_state_topic,
+              m_general_params.out_skeleton_group_topic};
 
   while (ros::ok()) {
     p.publish();

@@ -24,17 +24,25 @@ namespace hiros {
     struct GeneralParameters
     {
       int n_threads;
+
       std::string input_topic;
+
+      std::string out_joint_state_topic;
+      std::string out_skeleton_group_topic;
+
       SimTK::Rotation sensor_to_opensim;
     };
 
     struct IMUPlacerParameters
     {
       std::string model_path;
+
       bool perform_model_calibration;
       bool perform_heading_correction;
+
       std::string base_imu_label;
       std::string base_heading_axis;
+
       bool save_calibrated_model;
       bool visualize_calibration;
     };
@@ -42,6 +50,7 @@ namespace hiros {
     struct IKToolParameters
     {
       double accuracy;
+
       bool visualize_motion;
     };
 

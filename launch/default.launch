@@ -7,6 +7,8 @@
   <!-- General Parameters -->
   <arg name="n_threads"                    default="4"          />
   <arg name="input_topic"                  default=""           />
+  <arg name="out_joint_state_topic"        default=""           />
+  <arg name="out_skeleton_group_topic"     default=""           />
   <arg name="sensor_to_opensim_rotation_x" default="0"          />
   <arg name="sensor_to_opensim_rotation_y" default="0"          />
   <arg name="sensor_to_opensim_rotation_z" default="0"          />
@@ -31,6 +33,8 @@
     <!-- General Parameters -->
     <param name="n_threads"                    type="int"    value="$(arg n_threads)"                    />
     <param name="input_topic"                  type="str"    value="$(arg input_topic)"                  />
+    <param name="out_joint_state_topic"        type="str"    value="$(arg out_joint_state_topic)"        />
+    <param name="out_skeleton_group_topic"     type="str"    value="$(arg out_skeleton_group_topic)"     />
     <param name="sensor_to_opensim_rotation_x" type="double" value="$(arg sensor_to_opensim_rotation_x)" />
     <param name="sensor_to_opensim_rotation_y" type="double" value="$(arg sensor_to_opensim_rotation_y)" />
     <param name="sensor_to_opensim_rotation_z" type="double" value="$(arg sensor_to_opensim_rotation_z)" />
