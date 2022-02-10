@@ -51,9 +51,10 @@ void hiros::opensim_ik::Consumer::runIK()
     }
   }
 
-  m_rt_ik_tool->runSingleFrameIK(marker_refs, orientation_refs);
-  fillJointAngles();
-  fillSkeletonGroup();
+  if (m_rt_ik_tool->runSingleFrameIK(marker_refs, orientation_refs)) {
+    fillJointAngles();
+    fillSkeletonGroup();
+  }
 }
 
 void hiros::opensim_ik::Consumer::fillJointAngles()
