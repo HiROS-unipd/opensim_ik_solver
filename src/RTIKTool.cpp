@@ -107,7 +107,7 @@ bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
     m_state->updTime() = m_orientation_refs->getTimes().front();
   }
 
-  m_ik_solver->track(*m_state);
+  m_ik_solver->assemble(*m_state);
   m_model->realizeReport(*m_state);
 
   if (m_use_visualizer) {
