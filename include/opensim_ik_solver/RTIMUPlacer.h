@@ -32,7 +32,7 @@ namespace hiros {
       bool runCalibration();
 
       void initialize();
-      void applyHeadingCorrection();
+      bool applyHeadingCorrection();
       void computeTransforms();
       void computeOffsets();
       void visualizeCalibratedModel();

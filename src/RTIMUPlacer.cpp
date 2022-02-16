@@ -150,21 +150,31 @@ void hiros::opensim_ik::RTIMUPlacer::initialize()
   m_initialized = true;
 }
 
-void hiros::opensim_ik::RTIMUPlacer::applyHeadingCorrection()
+bool hiros::opensim_ik::RTIMUPlacer::applyHeadingCorrection()
 {
-  // Compute the rotation matrix so that (e.g. "pelvis_imu" + SimTK::ZAxis) lines up with model forward (+X)
-  SimTK::Vec3 heading_rotation_vec = OpenSim::OpenSenseUtilities::computeHeadingCorrection(
-    *m_model.get(), *m_state.get(), *m_orientations_table.get(), m_base_imu_label, m_direction_on_imu);
+  try {
+    // Compute the rotation matrix so that (e.g. "pelvis_imu" + SimTK::ZAxis) lines up with model forward (+X)
+    SimTK::Vec3 heading_rotation_vec = OpenSim::OpenSenseUtilities::computeHeadingCorrection(
+      *m_model.get(), *m_state.get(), *m_orientations_table.get(), m_base_imu_label, m_direction_on_imu);
 
-  SimTK::Rotation heading_rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
-                                   heading_rotation_vec[0],
-                                   SimTK::XAxis,
-                                   heading_rotation_vec[1],
-                                   SimTK::YAxis,
-                                   heading_rotation_vec[2],
-                                   SimTK::ZAxis);
+    SimTK::Rotation heading_rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                                     heading_rotation_vec[0],
+                                     SimTK::XAxis,
+                                     heading_rotation_vec[1],
+                                     SimTK::YAxis,
+                                     heading_rotation_vec[2],
+                                     SimTK::ZAxis);
 
-  OpenSim::OpenSenseUtilities::rotateOrientationTable(*m_orientations_table.get(), heading_rotation);
+    OpenSim::OpenSenseUtilities::rotateOrientationTable(*m_orientations_table.get(), heading_rotation);
+
+    return true;
+  }
+  catch (const OpenSim::Exception& ex) {
+    std::cout << "RTIMUPlacer... Warning: IMU '" << m_base_imu_label << "' not found for heading correction. Skipping."
+              << std::endl;
+
+    return false;
+  }
 }
 
 void hiros::opensim_ik::RTIMUPlacer::computeTransforms()
