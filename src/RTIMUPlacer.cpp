@@ -22,6 +22,7 @@ void hiros::opensim_ik::RTIMUPlacer::setModel(const OpenSim::Model& t_model)
 {
   m_model = std::make_unique<OpenSim::Model>(t_model);
   m_model->finalizeFromProperties();
+  m_initialized = false;
 }
 
 void hiros::opensim_ik::RTIMUPlacer::performHeadingCorrection(const std::string& t_base_imu_label,
@@ -145,6 +146,7 @@ void hiros::opensim_ik::RTIMUPlacer::initialize()
 
   if (!m_model) {
     m_model = std::make_unique<OpenSim::Model>(m_model_file_path);
+    m_model->initSystem();
   }
 
   m_initialized = true;

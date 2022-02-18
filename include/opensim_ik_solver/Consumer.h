@@ -14,6 +14,7 @@
 #include "opensim_ik_solver/PublisherData.h"
 #include "opensim_ik_solver/Queue.h"
 #include "opensim_ik_solver/RTIKTool.h"
+#include "opensim_ik_solver/utils.h"
 
 namespace hiros {
   namespace opensim_ik {
@@ -23,30 +24,25 @@ namespace hiros {
     public:
       Consumer(SkelGroupToPubDataQueuePtr t_queue_ptr,
                const OpenSim::Model& t_model,
-               bool t_use_marker_positions,
-               bool t_use_link_orientations,
-               const double& t_accuracy = 1e-4,
-               const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+               const IKToolParameters& t_ik_tool_params);
 
       void runSingleFrameIK();
-
-      void fillJointAngles();
-      void fillSkeletonGroup();
 
     private:
       void runIK();
 
-      std::shared_ptr<bool> m_processed;
+      void fillJointAngles();
+      void fillSkeletonGroup();
+
       std::shared_ptr<hiros_skeleton_msgs::SkeletonGroup> m_skeleton_group;
       std::shared_ptr<PublisherData> m_pub_data;
-
-      std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
-
-      bool m_use_marker_positions;
-      bool m_use_link_orientations;
-      SimTK::Rotation m_sensor_to_opensim;
+      std::shared_ptr<bool> m_processed;
 
       std::vector<std::string> m_marker_names;
+
+      IKToolParameters m_ik_tool_params;
+
+      std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
 
       SkelGroupToPubDataQueuePtr m_queue_ptr;
     };

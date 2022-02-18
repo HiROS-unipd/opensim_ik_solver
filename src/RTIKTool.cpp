@@ -26,6 +26,7 @@ void hiros::opensim_ik::RTIKTool::setModel(const OpenSim::Model& t_model)
 {
   m_model = std::make_unique<OpenSim::Model>(t_model);
   m_model->finalizeFromProperties();
+  m_initialized = false;
 }
 
 void hiros::opensim_ik::RTIKTool::enableVisualizer()
@@ -61,50 +62,49 @@ void hiros::opensim_ik::RTIKTool::updateReference(const OpenSim::OrientationsRef
 
 bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
 {
+  bool ik_failed = true;
+
   if (m_use_marker_positions) {
-    if (m_marker_refs == nullptr) {
-      return false;
-    }
-
-    if (m_marker_refs->getNumFrames() == 0) {
+    if (m_marker_refs == nullptr || m_marker_refs->getNumFrames() == 0) {
       std::cerr << "RTIKTool Warning: the marker reference is empty. Skipping" << std::endl;
-      return false;
     }
-
-    if (m_marker_refs->getNumFrames() > 1) {
+    else if (m_marker_refs->getNumFrames() > 1) {
       std::cerr << "RTIKTool Warning: the marker reference contains multiple frames. Skipping" << std::endl;
-      return false;
     }
+    else {
+      if (!m_initialized) {
+        initialize();
+      }
 
-    if (!m_initialized) {
-      initialize();
+      m_ik_solver->updateMarkersReference(m_marker_refs);
+      m_state->updTime() = m_marker_refs->getValidTimeRange().get(0);
+      ik_failed = false;
     }
-
-    m_ik_solver->updateMarkersReference(m_marker_refs);
-    m_state->updTime() = m_marker_refs->getValidTimeRange().get(0);
   }
 
   if (m_use_link_orientations) {
-    if (m_orientation_refs == nullptr) {
-      return false;
-    }
-
-    if (m_orientation_refs->getTimes().empty()) {
+    if (m_orientation_refs == nullptr || m_orientation_refs->getTimes().empty()) {
       std::cerr << "RTIKTool Warning: the orientation reference is empty. Skipping" << std::endl;
-      return false;
     }
-
-    if (m_orientation_refs->getTimes().size() > 1) {
+    else if (m_orientation_refs->getTimes().size() > 1) {
       std::cerr << "RTIKTool Warning: the orientation reference contains multiple frames. Skipping" << std::endl;
-      return false;
     }
+    else {
+      if (!m_initialized) {
+        initialize();
+      }
 
-    if (!m_initialized) {
-      initialize();
+      m_ik_solver->updateOrientationsReference(m_orientation_refs);
+      m_state->updTime() = m_orientation_refs->getTimes().front();
+      ik_failed = false;
     }
+  }
 
-    m_ik_solver->updateOrientationsReference(m_orientation_refs);
-    m_state->updTime() = m_orientation_refs->getTimes().front();
+  m_marker_refs.reset();
+  m_orientation_refs.reset();
+
+  if (ik_failed) {
+    return false;
   }
 
   m_ik_solver->assemble(*m_state);
@@ -113,9 +113,6 @@ bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
   if (m_use_visualizer) {
     m_model->getVisualizer().show(*m_state);
   }
-
-  m_marker_refs.reset();
-  m_orientation_refs.reset();
 
   return true;
 }

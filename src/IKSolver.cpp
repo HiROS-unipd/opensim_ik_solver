@@ -36,6 +36,17 @@ void hiros::opensim_ik::IKSolver::getRosParams()
 
   m_nh.getParam("model_path", m_ik_tool_params.model_path);
   m_nh.getParam("accuracy", m_ik_tool_params.accuracy);
+  double sensor_to_opensim_x, sensor_to_opensim_y, sensor_to_opensim_z;
+  m_nh.getParam("sensor_to_opensim_rotation_x", sensor_to_opensim_x);
+  m_nh.getParam("sensor_to_opensim_rotation_y", sensor_to_opensim_y);
+  m_nh.getParam("sensor_to_opensim_rotation_z", sensor_to_opensim_z);
+  m_ik_tool_params.sensor_to_opensim = SimTK::Rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                                                       sensor_to_opensim_x,
+                                                       SimTK::XAxis,
+                                                       sensor_to_opensim_y,
+                                                       SimTK::YAxis,
+                                                       sensor_to_opensim_z,
+                                                       SimTK::ZAxis);
   m_nh.getParam("use_marker_positions", m_ik_tool_params.use_marker_positions);
   m_nh.getParam("use_link_orientations", m_ik_tool_params.use_link_orientations);
   if (!m_ik_tool_params.use_marker_positions && !m_ik_tool_params.use_link_orientations) {
@@ -57,17 +68,6 @@ void hiros::opensim_ik::IKSolver::getRosParams()
   m_nh.getParam("input_topic", m_general_params.input_topic);
   m_nh.getParam("out_joint_state_topic", m_general_params.out_joint_state_topic);
   m_nh.getParam("out_skeleton_group_topic", m_general_params.out_skeleton_group_topic);
-  double sensor_to_opensim_x, sensor_to_opensim_y, sensor_to_opensim_z;
-  m_nh.getParam("sensor_to_opensim_rotation_x", sensor_to_opensim_x);
-  m_nh.getParam("sensor_to_opensim_rotation_y", sensor_to_opensim_y);
-  m_nh.getParam("sensor_to_opensim_rotation_z", sensor_to_opensim_z);
-  m_general_params.sensor_to_opensim = SimTK::Rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
-                                                       sensor_to_opensim_x,
-                                                       SimTK::XAxis,
-                                                       sensor_to_opensim_y,
-                                                       SimTK::YAxis,
-                                                       sensor_to_opensim_z,
-                                                       SimTK::ZAxis);
 }
 
 void hiros::opensim_ik::IKSolver::setupRos()
@@ -84,7 +84,7 @@ void hiros::opensim_ik::IKSolver::initializeIMUPlacer()
 {
   if (m_ik_tool_params.use_link_orientations) {
     m_rt_imu_placer =
-      std::make_unique<hiros::opensim_ik::RTIMUPlacer>(m_ik_tool_params.model_path, m_general_params.sensor_to_opensim);
+      std::make_unique<hiros::opensim_ik::RTIMUPlacer>(m_ik_tool_params.model_path, m_ik_tool_params.sensor_to_opensim);
 
     if (m_imu_placer_params.perform_heading_correction) {
       m_rt_imu_placer->performHeadingCorrection(m_imu_placer_params.base_imu_label,
@@ -122,7 +122,7 @@ void hiros::opensim_ik::IKSolver::initializeThreads()
 void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg)
 {
   if (m_ik_tool_params.use_link_orientations) {
-    ROS_INFO_STREAM("OpenSim IK Solver... Placing IMUs on model");
+    ROS_INFO_STREAM("OpenSim IK Solver... Calibrating IMUs on model");
 
     m_rt_imu_placer->runCalibration(utils::toQuaternionsTable(t_msg));
 
@@ -145,12 +145,7 @@ void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_skeleton_msgs::Skele
 
 void hiros::opensim_ik::IKSolver::startConsumer()
 {
-  Consumer c{SkelGroupToPubDataQueuePtr(&m_queue),
-             m_model,
-             m_ik_tool_params.use_marker_positions,
-             m_ik_tool_params.use_link_orientations,
-             m_ik_tool_params.accuracy,
-             m_general_params.sensor_to_opensim};
+  Consumer c{SkelGroupToPubDataQueuePtr(&m_queue), m_model, m_ik_tool_params};
 
   while (ros::ok()) {
     c.runSingleFrameIK();

@@ -21,39 +21,6 @@
 namespace hiros {
   namespace opensim_ik {
 
-    struct GeneralParameters
-    {
-      int n_threads;
-
-      std::string input_topic;
-
-      std::string out_joint_state_topic;
-      std::string out_skeleton_group_topic;
-
-      SimTK::Rotation sensor_to_opensim;
-    };
-
-    struct IMUPlacerParameters
-    {
-      bool perform_model_calibration;
-      bool perform_heading_correction;
-
-      std::string base_imu_label;
-      std::string base_heading_axis;
-
-      bool save_calibrated_model;
-      bool visualize_calibration;
-    };
-
-    struct IKToolParameters
-    {
-      std::string model_path;
-      double accuracy;
-
-      bool use_marker_positions;
-      bool use_link_orientations;
-    };
-
     class IKSolver
     {
     public:
