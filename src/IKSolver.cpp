@@ -177,7 +177,6 @@ void hiros::opensim_ik::IKSolver::callback(const hiros_skeleton_msgs::SkeletonGr
 
     m_initialized = true;
   }
-  else {
-    m_queue.push(t_msg);
-  }
+
+  m_queue.push(t_msg);
 }
