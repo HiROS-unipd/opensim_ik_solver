@@ -37,11 +37,11 @@ void hiros::opensim_ik::Consumer::runIK()
   OpenSim::MarkersReference marker_refs;
   OpenSim::OrientationsReference orientation_refs;
 
-  if (m_ik_tool_params.use_marker_positions) {
+  if (m_ik_tool_params.use_marker_positions && !m_skeleton_group->skeletons.front().markers.empty()) {
     marker_refs = utils::toMarkersReference(*m_skeleton_group, m_marker_names, m_ik_tool_params.sensor_to_opensim);
   }
 
-  if (m_ik_tool_params.use_link_orientations) {
+  if (m_ik_tool_params.use_link_orientations && !m_skeleton_group->skeletons.front().links.empty()) {
     orientation_refs = utils::toOrientationsReference(*m_skeleton_group, m_ik_tool_params.sensor_to_opensim);
   }
 
