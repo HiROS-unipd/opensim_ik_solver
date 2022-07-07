@@ -129,11 +129,11 @@ bool hiros::opensim_ik::RTIMUPlacer::runCalibration()
   // Compute the relative offset of each IMU relative to the body it is attached to
   computeOffsets();
 
+  m_model->finalizeConnections();
+
   if (m_use_visualizer) {
     visualizeCalibratedModel();
   }
-
-  m_model->finalizeConnections();
 
   return m_calibrated = true;
 }
@@ -146,7 +146,6 @@ void hiros::opensim_ik::RTIMUPlacer::initialize()
 
   if (!m_model) {
     m_model = std::make_unique<OpenSim::Model>(m_model_file_path);
-    m_model->initSystem();
   }
 
   m_initialized = true;
@@ -183,17 +182,14 @@ void hiros::opensim_ik::RTIMUPlacer::computeTransforms()
 {
   m_bodies.reserve(m_imu_labels.size());
 
-  for (auto& imu_name : m_imu_labels) {
-    unsigned long ix = imu_name.rfind("_imu");
+  for (const auto& imu_name : m_imu_labels) {
+    auto physical_offset_frame = m_model->findComponent<OpenSim::PhysicalOffsetFrame>(imu_name);
+    auto body_name = physical_offset_frame->getParentFrame().getName();
+    auto body = m_model->findComponent<OpenSim::Body>(body_name);
 
-    if (ix != std::string::npos) {
-      std::string body_name = imu_name.substr(0, ix);
-      auto body = dynamic_cast<const OpenSim::Body*>(m_model->findComponent<OpenSim::PhysicalFrame>(body_name));
-
-      if (body) {
-        m_bodies.push_back(const_cast<OpenSim::Body*>(body));
-        m_imu_bodies_in_ground.emplace(imu_name, body->getTransformInGround(*m_state.get()).R());
-      }
+    if (body) {
+      m_bodies.push_back(const_cast<OpenSim::Body*>(body));
+      m_imu_bodies_in_ground.emplace(imu_name, body->getTransformInGround(*m_state.get()).R());
     }
   }
 }
@@ -201,7 +197,7 @@ void hiros::opensim_ik::RTIMUPlacer::computeTransforms()
 void hiros::opensim_ik::RTIMUPlacer::computeOffsets()
 {
   unsigned long imu_index = 0;
-  for (auto& imu_name : m_imu_labels) {
+  for (const auto& imu_name : m_imu_labels) {
     if (m_imu_bodies_in_ground.find(imu_name) != m_imu_bodies_in_ground.end()) {
       SimTK::Rotation r_fb = ~m_imu_bodies_in_ground.at(imu_name) * m_rotations[static_cast<int>(imu_index)];
 
@@ -231,6 +227,12 @@ void hiros::opensim_ik::RTIMUPlacer::computeOffsets()
 
         imu_offset = new OpenSim::PhysicalOffsetFrame(imu_name, *m_bodies.at(imu_index), SimTK::Transform(r_fb, p_fb));
         m_bodies.at(imu_index)->addComponent(imu_offset);
+
+        // Create an IMU object in the model connected to imu_offset
+        OpenSim::IMU* model_imu = new OpenSim::IMU();
+        model_imu->setName(imu_name);
+        model_imu->connectSocket_frame(*imu_offset);
+        m_model->addModelComponent(model_imu);
       }
 
       // Add brick representing the IMU if not already present
