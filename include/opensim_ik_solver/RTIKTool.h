@@ -5,22 +5,23 @@
 #include "OpenSim/Simulation/InverseKinematicsSolver.h"
 #include "OpenSim/Simulation/Model/Model.h"
 
+// Internal dependencies
+#include "opensim_ik_solver/utils.h"
+
 namespace hiros {
   namespace opensim_ik {
 
     class RTIKTool
     {
     public:
-      RTIKTool(bool t_use_marker_positions, bool t_use_link_orientations, const double& t_accuracy = 1e-4);
-      RTIKTool(const OpenSim::Model& t_model,
-               bool t_use_marker_positions,
-               bool t_use_link_orientations,
-               const double& t_accuracy = 1e-4);
+      RTIKTool(const IKToolParameters& t_params);
+      RTIKTool(const OpenSim::Model& t_model, const IKToolParameters& t_params);
 
       virtual ~RTIKTool();
 
       void setModel(const OpenSim::Model& t_model);
       void enableVisualizer();
+      void disableVisualizer();
 
       bool runSingleFrameIK(const OpenSim::MarkersReference& t_marker_refs,
                             const OpenSim::OrientationsReference& t_orientation_refs = {});
@@ -54,17 +55,14 @@ namespace hiros {
       void initialize();
 
       bool m_initialized;
-      bool m_use_marker_positions{false};
-      bool m_use_link_orientations{false};
-      std::unique_ptr<OpenSim::Model> m_model;
 
-      double m_accuracy;
-      bool m_use_visualizer;
+      IKToolParameters m_params;
 
       std::shared_ptr<OpenSim::MarkersReference> m_marker_refs;
       std::shared_ptr<OpenSim::OrientationsReference> m_orientation_refs;
 
       std::unique_ptr<OpenSim::InverseKinematicsSolver> m_ik_solver;
+      std::unique_ptr<OpenSim::Model> m_model;
       std::unique_ptr<SimTK::State> m_state;
     };
 

@@ -8,6 +8,7 @@
 // Internal dependencies
 #include "opensim_ik_solver/PublisherData.h"
 #include "opensim_ik_solver/Queue.h"
+#include "opensim_ik_solver/utils.h"
 
 namespace hiros {
   namespace opensim_ik {
@@ -15,10 +16,7 @@ namespace hiros {
     class Publisher
     {
     public:
-      Publisher(SkelGroupToPubDataQueuePtr t_queue_ptr,
-                const ros::NodeHandle& t_nh,
-                const std::string& t_joint_state_topic = "joint_state",
-                const std::string& t_skeleton_group_topic = "skeleton_group");
+      Publisher(SkelGroupToPubDataQueuePtr t_queue_ptr, const ros::NodeHandle& t_nh, const GeneralParameters& t_params);
 
       void publish();
 

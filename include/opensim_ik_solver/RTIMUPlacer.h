@@ -5,28 +5,33 @@
 #include "OpenSim/Simulation/Model/Model.h"
 #include "OpenSim/Simulation/OrientationsReference.h"
 
+// Internal dependencies
+#include "opensim_ik_solver/utils.h"
+
 namespace hiros {
   namespace opensim_ik {
 
     class RTIMUPlacer
     {
     public:
-      RTIMUPlacer(const std::string& t_model_file_path = "",
-                  const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+      RTIMUPlacer(const IMUPlacerParameters& t_params);
+      RTIMUPlacer(const OpenSim::Model& t_model, const IMUPlacerParameters& t_params);
 
       virtual ~RTIMUPlacer();
 
       void setModel(const OpenSim::Model& t_model);
-      void performHeadingCorrection(const std::string& t_base_imu_label, const std::string& t_base_heading_axis);
+      void initializeHeadingCorrection();
       void enableVisualizer();
       void disableVisualizer();
 
       bool runCalibration(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table);
 
       OpenSim::Model& getCalibratedModel() const;
+      void saveModel(const std::string& t_calibrated_model_path);
+      void saveModel();
 
     private:
-      void setDirectionOnImu(const std::string& t_base_heading_axis);
+      void setDirectionOnImu();
 
       void updateOrientationsTable(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table);
       bool runCalibration();
@@ -39,12 +44,8 @@ namespace hiros {
 
       bool m_initialized;
       bool m_calibrated;
-      std::string m_model_file_path;
-      SimTK::Rotation m_sensor_to_opensim;
-      bool m_perform_heading_correction;
-      std::string m_base_imu_label;
-      std::string m_base_heading_axis;
-      bool m_use_visualizer;
+
+      IMUPlacerParameters m_params;
 
       SimTK::CoordinateDirection m_direction_on_imu;
       std::vector<std::string> m_imu_labels;

@@ -8,11 +8,11 @@
 
 hiros::opensim_ik::Consumer::Consumer(SkelGroupToPubDataQueuePtr t_queue_ptr,
                                       const OpenSim::Model& t_model,
-                                      const IKToolParameters& t_ik_tool_params)
+                                      const IKToolParameters& t_params)
   : m_skeleton_group(nullptr)
   , m_pub_data(nullptr)
   , m_processed(nullptr)
-  , m_ik_tool_params(t_ik_tool_params)
+  , m_params(t_params)
   , m_queue_ptr(t_queue_ptr)
 {
   // Initialize marker names
@@ -21,8 +21,8 @@ hiros::opensim_ik::Consumer::Consumer(SkelGroupToPubDataQueuePtr t_queue_ptr,
   m_marker_names = utils::toStdVector(marker_names);
 
   // Initialize IK Tool
-  m_rt_ik_tool = std::make_unique<hiros::opensim_ik::RTIKTool>(
-    t_model, m_ik_tool_params.use_marker_positions, m_ik_tool_params.use_link_orientations, m_ik_tool_params.accuracy);
+  m_rt_ik_tool = std::make_unique<hiros::opensim_ik::RTIKTool>(t_model, m_params);
+
 }
 
 void hiros::opensim_ik::Consumer::runSingleFrameIK()
@@ -37,12 +37,14 @@ void hiros::opensim_ik::Consumer::runIK()
   OpenSim::MarkersReference marker_refs;
   OpenSim::OrientationsReference orientation_refs;
 
-  if (m_ik_tool_params.use_marker_positions && !m_skeleton_group->skeletons.front().markers.empty()) {
-    marker_refs = utils::toMarkersReference(*m_skeleton_group, m_marker_names, m_ik_tool_params.sensor_to_opensim);
+  // TODO: currently only run IK on the first skeleton
+
+  if (m_params.use_marker_positions && !m_skeleton_group->skeletons.front().markers.empty()) {
+    marker_refs = utils::toMarkersReference(*m_skeleton_group, m_marker_names, m_params.sensor_to_opensim);
   }
 
-  if (m_ik_tool_params.use_link_orientations && !m_skeleton_group->skeletons.front().links.empty()) {
-    orientation_refs = utils::toOrientationsReference(*m_skeleton_group, m_ik_tool_params.sensor_to_opensim);
+  if (m_params.use_link_orientations && !m_skeleton_group->skeletons.front().links.empty()) {
+    orientation_refs = utils::toOrientationsReference(*m_skeleton_group, m_params.sensor_to_opensim);
   }
 
   if (m_rt_ik_tool->runSingleFrameIK(marker_refs, orientation_refs)) {
@@ -81,17 +83,17 @@ void hiros::opensim_ik::Consumer::fillSkeletonGroup()
     hiros::skeletons::types::Acceleration a;
 
     if (!positions.empty()) {
-      const auto& pos = m_ik_tool_params.sensor_to_opensim.invert() * positions.at(mk_idx);
+      const auto& pos = m_params.sensor_to_opensim.invert() * positions.at(mk_idx);
       p.position = {pos[0], pos[1], pos[2]};
     }
 
     if (!velocities.empty()) {
-      const auto& vel = m_ik_tool_params.sensor_to_opensim.invert() * velocities.at(mk_idx);
+      const auto& vel = m_params.sensor_to_opensim.invert() * velocities.at(mk_idx);
       v.linear = {vel[0], vel[1], vel[2]};
     }
 
     if (!accelerations.empty()) {
-      const auto& acc = m_ik_tool_params.sensor_to_opensim.invert() * accelerations.at(mk_idx);
+      const auto& acc = m_params.sensor_to_opensim.invert() * accelerations.at(mk_idx);
       a.linear = {acc[0], acc[1], acc[2]};
     }
 

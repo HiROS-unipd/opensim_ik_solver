@@ -5,16 +5,18 @@
 // Internal dependencies
 #include "opensim_ik_solver/RTIMUPlacer.h"
 
-hiros::opensim_ik::RTIMUPlacer::RTIMUPlacer(const std::string& t_model_file_path,
-                                            const SimTK::Rotation& t_sensor_to_opensim)
+hiros::opensim_ik::RTIMUPlacer::RTIMUPlacer(const IMUPlacerParameters& t_params)
   : m_initialized(false)
   , m_calibrated(false)
-  , m_model_file_path(t_model_file_path)
-  , m_sensor_to_opensim(t_sensor_to_opensim)
-  , m_perform_heading_correction(false)
-  , m_use_visualizer(false)
+  , m_params(t_params)
   , m_direction_on_imu(SimTK::ZAxis)
 {}
+
+hiros::opensim_ik::RTIMUPlacer::RTIMUPlacer(const OpenSim::Model& t_model, const IMUPlacerParameters& t_params)
+  : RTIMUPlacer(t_params)
+{
+  setModel(t_model);
+}
 
 hiros::opensim_ik::RTIMUPlacer::~RTIMUPlacer() {}
 
@@ -25,22 +27,28 @@ void hiros::opensim_ik::RTIMUPlacer::setModel(const OpenSim::Model& t_model)
   m_initialized = false;
 }
 
-void hiros::opensim_ik::RTIMUPlacer::performHeadingCorrection(const std::string& t_base_imu_label,
-                                                              const std::string& t_base_heading_axis)
+void hiros::opensim_ik::RTIMUPlacer::initializeHeadingCorrection()
 {
-  m_perform_heading_correction = true;
-  m_base_imu_label = t_base_imu_label;
-  setDirectionOnImu(t_base_heading_axis);
+  if (!m_params.heading_correction) {
+    std::cerr << "RTIMUPlacer Error: trying to perform heading correction after setting parameter 'heading_correction' "
+                 "to false."
+              << std::endl;
+  }
+  else {
+    setDirectionOnImu();
+  }
 }
 
 void hiros::opensim_ik::RTIMUPlacer::enableVisualizer()
 {
-  m_use_visualizer = true;
+  m_params.use_visualizer = true;
+  m_model->setUseVisualizer(m_params.use_visualizer);
 }
 
 void hiros::opensim_ik::RTIMUPlacer::disableVisualizer()
 {
-  m_use_visualizer = false;
+  m_params.use_visualizer = false;
+  m_model->setUseVisualizer(m_params.use_visualizer);
 }
 
 bool hiros::opensim_ik::RTIMUPlacer::runCalibration(
@@ -59,9 +67,25 @@ OpenSim::Model& hiros::opensim_ik::RTIMUPlacer::getCalibratedModel() const
   return *m_model;
 }
 
-void hiros::opensim_ik::RTIMUPlacer::setDirectionOnImu(const std::string& t_base_heading_axis)
+void hiros::opensim_ik::RTIMUPlacer::saveModel(const std::string& t_calibrated_model_path)
 {
-  std::string imu_axis = OpenSim::IO::Lowercase(t_base_heading_axis);
+  if (!m_params.save_calibrated_model) {
+    std::cerr << "RTIMUPlacer Warning: Parameter 'save_calibrated_model' was set to false. Overriding" << std::endl;
+    m_params.save_calibrated_model = true;
+  }
+
+  std::cout << "RTIMUPlacer Info: Saving calibrated model to " << t_calibrated_model_path << std::endl;
+  m_model->print(t_calibrated_model_path);
+}
+
+void hiros::opensim_ik::RTIMUPlacer::saveModel()
+{
+  return saveModel(m_params.calibrated_model_path);
+}
+
+void hiros::opensim_ik::RTIMUPlacer::setDirectionOnImu()
+{
+  std::string imu_axis = OpenSim::IO::Lowercase(m_params.base_heading_axis);
 
   int direction = (imu_axis.front() == '-') ? -1 : 1;
 
@@ -79,7 +103,8 @@ void hiros::opensim_ik::RTIMUPlacer::setDirectionOnImu(const std::string& t_base
       break;
 
     default:
-      OPENSIM_THROW(OpenSim::Exception, "Invalid specification of heading axis '" + t_base_heading_axis + "' found.");
+      OPENSIM_THROW(OpenSim::Exception,
+                    "Invalid specification of heading axis '" + m_params.base_heading_axis + "' found.");
   }
 }
 
@@ -87,7 +112,6 @@ void hiros::opensim_ik::RTIMUPlacer::updateOrientationsTable(
   const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table)
 {
   m_orientations_table = std::make_unique<OpenSim::TimeSeriesTable_<SimTK::Quaternion>>(t_orientations_table);
-  OpenSim::OpenSenseUtilities::rotateOrientationTable(*m_orientations_table.get(), m_sensor_to_opensim);
 }
 
 bool hiros::opensim_ik::RTIMUPlacer::runCalibration()
@@ -108,7 +132,7 @@ bool hiros::opensim_ik::RTIMUPlacer::runCalibration()
   // Default pose of the model
   m_model->realizePosition(*m_state.get());
 
-  if (m_perform_heading_correction) {
+  if (m_params.heading_correction) {
     applyHeadingCorrection();
   }
 
@@ -131,7 +155,7 @@ bool hiros::opensim_ik::RTIMUPlacer::runCalibration()
 
   m_model->finalizeConnections();
 
-  if (m_use_visualizer) {
+  if (m_params.use_visualizer) {
     visualizeCalibratedModel();
   }
 
@@ -140,13 +164,12 @@ bool hiros::opensim_ik::RTIMUPlacer::runCalibration()
 
 void hiros::opensim_ik::RTIMUPlacer::initialize()
 {
-  if (m_model_file_path.empty()) {
-    OPENSIM_THROW(OpenSim::Exception, "No model file specified for RTIMUPlacer.");
+  if (!m_model) {
+    OPENSIM_THROW(OpenSim::Exception, "No model passed to RTIMUPlacer. Call setModel() method.");
   }
 
-  if (!m_model) {
-    m_model = std::make_unique<OpenSim::Model>(m_model_file_path);
-  }
+  initializeHeadingCorrection();
+  m_model->setUseVisualizer(m_params.use_visualizer);
 
   m_initialized = true;
 }
@@ -156,7 +179,7 @@ bool hiros::opensim_ik::RTIMUPlacer::applyHeadingCorrection()
   try {
     // Compute the rotation matrix so that (e.g. "pelvis_imu" + SimTK::ZAxis) lines up with model forward (+X)
     SimTK::Vec3 heading_rotation_vec = OpenSim::OpenSenseUtilities::computeHeadingCorrection(
-      *m_model.get(), *m_state.get(), *m_orientations_table.get(), m_base_imu_label, m_direction_on_imu);
+      *m_model.get(), *m_state.get(), *m_orientations_table.get(), m_params.base_imu_label, m_direction_on_imu);
 
     SimTK::Rotation heading_rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
                                      heading_rotation_vec[0],
@@ -171,8 +194,8 @@ bool hiros::opensim_ik::RTIMUPlacer::applyHeadingCorrection()
     return true;
   }
   catch (const OpenSim::Exception& ex) {
-    std::cout << "RTIMUPlacer... Warning: IMU '" << m_base_imu_label << "' not found for heading correction. Skipping."
-              << std::endl;
+    std::cout << "RTIMUPlacer... Warning: IMU '" << m_params.base_imu_label
+              << "' not found for heading correction. Skipping." << std::endl;
 
     return false;
   }
@@ -248,7 +271,9 @@ void hiros::opensim_ik::RTIMUPlacer::computeOffsets()
 
 void hiros::opensim_ik::RTIMUPlacer::visualizeCalibratedModel()
 {
-  m_model->setUseVisualizer(m_use_visualizer);
+  if (!m_model->getUseVisualizer()) {
+    m_model->setUseVisualizer(true);
+  }
 
   SimTK::State& s = m_model->initSystem();
   s.updTime() = m_times.front();

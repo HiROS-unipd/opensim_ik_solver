@@ -22,9 +22,7 @@ namespace hiros {
     class Consumer
     {
     public:
-      Consumer(SkelGroupToPubDataQueuePtr t_queue_ptr,
-               const OpenSim::Model& t_model,
-               const IKToolParameters& t_ik_tool_params);
+      Consumer(SkelGroupToPubDataQueuePtr t_queue_ptr, const OpenSim::Model& t_model, const IKToolParameters& t_params);
 
       void runSingleFrameIK();
 
@@ -40,7 +38,7 @@ namespace hiros {
 
       std::vector<std::string> m_marker_names;
 
-      IKToolParameters m_ik_tool_params;
+      IKToolParameters m_params;
 
       std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
 

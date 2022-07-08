@@ -1,21 +1,15 @@
 // Internal dependencies
 #include "opensim_ik_solver/RTIKTool.h"
 
-hiros::opensim_ik::RTIKTool::RTIKTool(bool t_use_marker_positions,
-                                      bool t_use_link_orientations,
-                                      const double& t_accuracy)
+hiros::opensim_ik::RTIKTool::RTIKTool(const IKToolParameters& t_params)
   : m_initialized(false)
-  , m_use_marker_positions(t_use_marker_positions)
-  , m_use_link_orientations(t_use_link_orientations)
-  , m_accuracy(t_accuracy)
-  , m_use_visualizer(false)
-{}
+  , m_params(t_params)
+{
+  m_params.use_visualizer = false; // TODO: currently not supported
+}
 
-hiros::opensim_ik::RTIKTool::RTIKTool(const OpenSim::Model& t_model,
-                                      bool t_use_marker_positions,
-                                      bool t_use_link_orientations,
-                                      const double& t_accuracy)
-  : RTIKTool(t_use_marker_positions, t_use_link_orientations, t_accuracy)
+hiros::opensim_ik::RTIKTool::RTIKTool(const OpenSim::Model& t_model, const IKToolParameters& t_params)
+  : RTIKTool(t_params)
 {
   setModel(t_model);
 }
@@ -31,8 +25,14 @@ void hiros::opensim_ik::RTIKTool::setModel(const OpenSim::Model& t_model)
 
 void hiros::opensim_ik::RTIKTool::enableVisualizer()
 {
-  m_use_visualizer = true;
-  m_model->setUseVisualizer(m_use_visualizer);
+  m_params.use_visualizer = true;
+  m_model->setUseVisualizer(m_params.use_visualizer);
+}
+
+void hiros::opensim_ik::RTIKTool::disableVisualizer()
+{
+  m_params.use_visualizer = false;
+  m_model->setUseVisualizer(m_params.use_visualizer);
 }
 
 bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(const OpenSim::MarkersReference& t_marker_refs,
@@ -64,7 +64,7 @@ bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
 {
   bool ik_failed = true;
 
-  if (m_use_marker_positions) {
+  if (m_params.use_marker_positions) {
     if (m_marker_refs == nullptr || m_marker_refs->getNumFrames() == 0) {
       std::cerr << "RTIKTool Warning: the marker reference is empty. Skipping" << std::endl;
     }
@@ -82,7 +82,7 @@ bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
     }
   }
 
-  if (m_use_link_orientations) {
+  if (m_params.use_link_orientations) {
     if (m_orientation_refs == nullptr || m_orientation_refs->getTimes().empty()) {
       std::cerr << "RTIKTool Warning: the orientation reference is empty. Skipping" << std::endl;
     }
@@ -110,7 +110,7 @@ bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
   m_ik_solver->assemble(*m_state);
   m_model->realizeReport(*m_state);
 
-  if (m_use_visualizer) {
+  if (m_params.use_visualizer) {
     m_model->getVisualizer().show(*m_state);
   }
 
@@ -324,11 +324,11 @@ void hiros::opensim_ik::RTIKTool::initialize()
   std::shared_ptr<OpenSim::MarkersReference> marker_refs;
   std::shared_ptr<OpenSim::OrientationsReference> orientation_refs;
 
-  if (m_use_marker_positions) {
+  if (m_params.use_marker_positions && m_marker_refs->getNumRefs() > 0) {
     m_state->updTime() = m_marker_refs->getValidTimeRange().get(0);
     marker_refs = m_marker_refs;
   }
-  if (m_use_link_orientations) {
+  if (m_params.use_link_orientations && m_orientation_refs->getNumRefs() > 0) {
     m_state->updTime() = m_orientation_refs->getTimes().front();
     orientation_refs = m_orientation_refs;
   }
@@ -337,10 +337,10 @@ void hiros::opensim_ik::RTIKTool::initialize()
 
   m_ik_solver =
     std::make_unique<OpenSim::InverseKinematicsSolver>(*m_model.get(), marker_refs, orientation_refs, coordinate_refs);
-  m_ik_solver->setAccuracy(m_accuracy);
+  m_ik_solver->setAccuracy(m_params.accuracy);
   m_ik_solver->assemble(*m_state);
 
-  if (m_use_visualizer) {
+  if (m_params.use_visualizer) {
     m_model->updVisualizer().updSimbodyVisualizer().setWindowTitle(m_model->getName() + " - Inverse Kinematics");
     m_model->updVisualizer().updSimbodyVisualizer().setDesiredFrameRate(std::numeric_limits<double>::max());
     m_model->updVisualizer().updSimbodyVisualizer().setShowFrameRate(true);

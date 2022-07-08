@@ -2,13 +2,12 @@
 
 hiros::opensim_ik::Publisher::Publisher(SkelGroupToPubDataQueuePtr t_queue_ptr,
                                         const ros::NodeHandle& t_nh,
-                                        const std::string& t_joint_state_topic,
-                                        const std::string& t_skeleton_group_topic)
+                                        const GeneralParameters& t_params)
   : m_nh(t_nh)
   , m_queue_ptr(t_queue_ptr)
 {
-  m_js_pub = m_nh.advertise<sensor_msgs::JointState>(t_joint_state_topic, 1);
-  m_sg_pub = m_nh.advertise<hiros_skeleton_msgs::SkeletonGroup>(t_skeleton_group_topic, 1);
+  m_js_pub = m_nh.advertise<sensor_msgs::JointState>(t_params.out_joint_state_topic, 1);
+  m_sg_pub = m_nh.advertise<hiros_skeleton_msgs::SkeletonGroup>(t_params.out_skeleton_group_topic, 1);
 }
 
 void hiros::opensim_ik::Publisher::publish()
