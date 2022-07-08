@@ -13,35 +13,35 @@ namespace hiros {
   namespace opensim_ik {
     struct GeneralParameters
     {
-      int n_threads;
+      int n_threads{1};
 
-      std::string input_topic;
+      std::string input_topic{};
 
-      std::string out_joint_state_topic;
-      std::string out_skeleton_group_topic;
+      std::string out_joint_state_topic{};
+      std::string out_skeleton_group_topic{};
     };
 
     struct IMUPlacerParameters
     {
-      bool perform_model_calibration;
-      bool perform_heading_correction;
+      bool perform_model_calibration{false};
+      bool perform_heading_correction{false};
 
-      std::string base_imu_label;
-      std::string base_heading_axis;
+      std::string base_imu_label{};
+      std::string base_heading_axis{};
 
-      bool save_calibrated_model;
-      bool visualize_calibration;
+      bool save_calibrated_model{false};
+      bool visualize_calibration{false};
     };
 
     struct IKToolParameters
     {
-      std::string model_path;
-      double accuracy;
+      std::string model_path{};
+      double accuracy{1.e4};
 
-      SimTK::Rotation sensor_to_opensim;
+      SimTK::Rotation sensor_to_opensim{};
 
-      bool use_marker_positions;
-      bool use_link_orientations;
+      bool use_marker_positions{false};
+      bool use_link_orientations{false};
     };
 
     namespace utils {
