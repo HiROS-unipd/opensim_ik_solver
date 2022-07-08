@@ -29,6 +29,8 @@
 
   <!-- IK Tool Parameters -->
   <arg name="accuracy"                     default="1e-4"  />
+  <arg name="markers_weight"               default="1."    />
+  <arg name="orientations_weight"          default="1."    />
   <arg name="sensor_to_opensim_rotation_x" default="0"     />
   <arg name="sensor_to_opensim_rotation_y" default="0"     />
   <arg name="sensor_to_opensim_rotation_z" default="0"     />
@@ -64,6 +66,8 @@
 
     <!-- IK Tool Parameters -->
     <param name="accuracy"                     type="double" value="$(arg accuracy)"                     />
+    <param name="markers_weight"               type="double" value="$(arg markers_weight)"               />
+    <param name="orientations_weight"          type="double" value="$(arg orientations_weight)"          />
     <param name="sensor_to_opensim_rotation_x" type="double" value="$(arg sensor_to_opensim_rotation_x)" />
     <param name="sensor_to_opensim_rotation_y" type="double" value="$(arg sensor_to_opensim_rotation_y)" />
     <param name="sensor_to_opensim_rotation_z" type="double" value="$(arg sensor_to_opensim_rotation_z)" />

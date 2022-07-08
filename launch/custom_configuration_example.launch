@@ -30,6 +30,8 @@
 
     <!-- IK Tool Parameters -->
     <arg name="accuracy"                     value="1e-4"       />
+    <arg name="markers_weight"               value="1.0"        />
+    <arg name="orientations_weight"          value="0.1"        />
     <arg name="sensor_to_opensim_rotation_x" value="-1.5707963" />
     <arg name="sensor_to_opensim_rotation_y" value="0"          />
     <arg name="sensor_to_opensim_rotation_z" value="0"          />

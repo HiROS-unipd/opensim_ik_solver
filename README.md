@@ -2,13 +2,16 @@
 
 
 ## Dependencies
-* [OpenSim](https://github.com/opensim-org/opensim-core) (tested with OpenSim 4.2)
+* [OpenSim](https://github.com/opensim-org/opensim-core) (tested with OpenSim 4.3)
 * [Hi-ROS skeleton_msgs](https://gitlab.com/hi-ros/skeleton_msgs)
 
 
 ## Patch OpenSim
 Before running the ROS node OpenSim must be patched.
-Add the following code after line 234 in OpenSim [InverseKinematicsSolver.h](https://github.com/opensim-org/opensim-core/blob/4.2/OpenSim/Simulation/InverseKinematicsSolver.h#L234):
+
+Add the following code in OpenSim [InverseKinematicsSolver.h](https://github.com/opensim-org/opensim-core/blob/4.3/OpenSim/Simulation/InverseKinematicsSolver.h):
+
+- after [line 234](https://github.com/opensim-org/opensim-core/blob/4.3/OpenSim/Simulation/InverseKinematicsSolver.h#L234):
 
 ```c++
 inline void updateMarkersReference(std::shared_ptr<MarkersReference> newMarkersReference)
@@ -19,11 +22,40 @@ inline void updateOrientationsReference(std::shared_ptr<OrientationsReference> n
 {
     _orientationsReference = newOrientationsReference;
 }
+
+inline void updateMarkersWeight(const SimTK::Real& newMarkersWeight)
+{
+    _markers_weight = newMarkersWeight;
+}
+inline void updateOrientationsWeight(const SimTK::Real& newOrientationsWeight)
+{
+    _orientations_weight = newOrientationsWeight;
+}
+```
+
+- after [line 269](https://github.com/opensim-org/opensim-core/blob/4.3/OpenSim/Simulation/InverseKinematicsSolver.h#L269):
+
+```c++
+// Markers/orientations relative weights
+SimTK::Real _markers_weight{1.};
+SimTK::Real _orientations_weight{1.};
+```
+
+Edit the following lines in OpenSim [InverseKinematicsSolver.cpp](https://github.com/opensim-org/opensim-core/blob/4.3/OpenSim/Simulation/InverseKinematicsSolver.cpp):
+
+- [line 424](https://github.com/opensim-org/opensim-core/blob/4.3/OpenSim/Simulation/InverseKinematicsSolver.cpp#L424):
+```c++
+updAssembler().adoptAssemblyGoal(condOwner.release(), _markers_weight);
+```
+
+- [line 466](https://github.com/opensim-org/opensim-core/blob/4.3/OpenSim/Simulation/InverseKinematicsSolver.cpp#L466):
+```c++
+updAssembler().adoptAssemblyGoal(condOwner.release(), _orientations_weight);
 ```
 
 
 ## Launch files
-**hiros\_opensim\_ik\_solver\_default.launch**
+**default.launch**
 Contains the default values for each parameter
 
 **custom\_configuration\_example.launch**
@@ -31,22 +63,9 @@ Contains an example on how to set some parameters of choice
 
 
 ## Usage
-Each hiros_skeleton_msgs/MIMU/imu/header/frame_id must correspond to one of the IMU names set in the model to be used.
+Skeleton's marker names must correspond to the virtual markers defined in the model.
+Skeleton's link names must correspond to the virtual IMUs defined in the model.
+
 ```
 roslaunch hiros_opensim_ik_solver custom_configuration_example.launch
 ```
-
-
-## Single-thread Performance
-The system has been tested on an Intel Core i9-9900K CPU @ 3.60GHz, 62.6 GiB memory.
-Results (Rajagopal's model, 8 IMUs):
-
-| Solver accuracy | Average time per frame |
-| :---:           | :---:                  |
-| 1e-01           | 1.6 ms                 |
-| 1e-02           | 2.7 ms                 |
-| 1e-03           | 3.6 ms                 |
-| 1e-04           | 8.7 ms                 |
-| 1e-05           | 13.9 ms                |
-| 1e-06           | 16.1 ms                |
-| 1e-07           | 18.0 ms                |

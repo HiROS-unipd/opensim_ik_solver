@@ -337,6 +337,8 @@ void hiros::opensim_ik::RTIKTool::initialize()
 
   m_ik_solver =
     std::make_unique<OpenSim::InverseKinematicsSolver>(*m_model.get(), marker_refs, orientation_refs, coordinate_refs);
+  m_ik_solver->updateMarkersWeight(m_params.markers_weight);
+  m_ik_solver->updateOrientationsWeight(m_params.orientations_weight);
   m_ik_solver->setAccuracy(m_params.accuracy);
   m_ik_solver->assemble(*m_state);
 

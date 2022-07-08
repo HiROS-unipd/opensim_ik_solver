@@ -85,6 +85,14 @@ void hiros::opensim_ik::IKSolver::getRosParams()
   m_nh.getParam("accuracy", m_ik_tool_params.accuracy);
   m_nh.getParam("visualize_ik", m_ik_tool_params.use_visualizer);
 
+  if (m_general_params.use_marker_positions) {
+    m_nh.getParam("markers_weight", m_ik_tool_params.markers_weight);
+  }
+
+  if (m_general_params.use_link_orientations) {
+    m_nh.getParam("orientations_weight", m_ik_tool_params.orientations_weight);
+  }
+
   double sensor_to_opensim_x, sensor_to_opensim_y, sensor_to_opensim_z;
   m_nh.getParam("sensor_to_opensim_rotation_x", sensor_to_opensim_x);
   m_nh.getParam("sensor_to_opensim_rotation_y", sensor_to_opensim_y);

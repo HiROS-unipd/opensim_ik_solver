@@ -48,6 +48,9 @@ namespace hiros {
       bool use_marker_positions{false};
       bool use_link_orientations{false};
 
+      double markers_weight{1.};
+      double orientations_weight{1.};
+
       SimTK::Rotation sensor_to_opensim{};
 
       bool use_visualizer{false};
