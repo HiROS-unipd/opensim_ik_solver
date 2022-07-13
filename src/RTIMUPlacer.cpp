@@ -207,12 +207,16 @@ void hiros::opensim_ik::RTIMUPlacer::computeTransforms()
 
   for (const auto& imu_name : m_imu_labels) {
     auto physical_offset_frame = m_model->findComponent<OpenSim::PhysicalOffsetFrame>(imu_name);
-    auto body_name = physical_offset_frame->getParentFrame().getName();
-    auto body = m_model->findComponent<OpenSim::Body>(body_name);
 
-    if (body) {
-      m_bodies.push_back(const_cast<OpenSim::Body*>(body));
-      m_imu_bodies_in_ground.emplace(imu_name, body->getTransformInGround(*m_state.get()).R());
+    if (physical_offset_frame) {
+      auto body_name = physical_offset_frame->getParentFrame().getName();
+
+      auto body = m_model->findComponent<OpenSim::Body>(body_name);
+
+      if (body) {
+        m_bodies.push_back(const_cast<OpenSim::Body*>(body));
+        m_imu_bodies_in_ground.emplace(imu_name, body->getTransformInGround(*m_state.get()).R());
+      }
     }
   }
 }
