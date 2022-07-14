@@ -65,38 +65,32 @@ bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
   bool ik_failed = true;
 
   if (m_params.use_marker_positions) {
-    if (m_marker_refs == nullptr || m_marker_refs->getNumFrames() == 0) {
-      std::cerr << "RTIKTool Warning: the marker reference is empty. Skipping" << std::endl;
-    }
-    else if (m_marker_refs->getNumFrames() > 1) {
-      std::cerr << "RTIKTool Warning: the marker reference contains multiple frames. Skipping" << std::endl;
-    }
-    else {
+    if (m_marker_refs && m_marker_refs->getNumFrames() == 1) {
       if (!m_initialized) {
         initialize();
       }
 
-      m_ik_solver->updateMarkersReference(m_marker_refs);
       m_state->updTime() = m_marker_refs->getValidTimeRange().get(0);
       ik_failed = false;
+    }
+
+    if (m_initialized) {
+      m_ik_solver->updateMarkersReference(m_marker_refs);
     }
   }
 
   if (m_params.use_link_orientations) {
-    if (m_orientation_refs == nullptr || m_orientation_refs->getTimes().empty()) {
-      std::cerr << "RTIKTool Warning: the orientation reference is empty. Skipping" << std::endl;
-    }
-    else if (m_orientation_refs->getTimes().size() > 1) {
-      std::cerr << "RTIKTool Warning: the orientation reference contains multiple frames. Skipping" << std::endl;
-    }
-    else {
+    if (m_orientation_refs && m_orientation_refs->getTimes().size() == 1) {
       if (!m_initialized) {
         initialize();
       }
 
-      m_ik_solver->updateOrientationsReference(m_orientation_refs);
       m_state->updTime() = m_orientation_refs->getTimes().front();
       ik_failed = false;
+    }
+
+    if (m_initialized) {
+      m_ik_solver->updateOrientationsReference(m_orientation_refs);
     }
   }
 
