@@ -16,9 +16,10 @@ hiros::opensim_ik::Consumer::Consumer(SkelGroupToPubDataQueuePtr t_queue_ptr,
   , m_queue_ptr(t_queue_ptr)
 {
   // Initialize marker names
-  OpenSim::Array<std::string> marker_names;
-  t_model.getMarkerSet().getNames(marker_names);
-  m_marker_names = utils::toStdVector(marker_names);
+  m_marker_names = utils::getMarkerNames(t_model);
+
+  // Initialize IMU names
+  m_orientation_names = utils::getOrientationNames(t_model);
 
   // Initialize IK Tool
   m_rt_ik_tool = std::make_unique<hiros::opensim_ik::RTIKTool>(t_model, m_params);
@@ -44,7 +45,8 @@ void hiros::opensim_ik::Consumer::runIK()
   }
 
   if (m_params.use_link_orientations && !m_skeleton_group->skeletons.front().links.empty()) {
-    orientation_refs = utils::toOrientationsReference(*m_skeleton_group, m_params.sensor_to_opensim);
+    orientation_refs =
+      utils::toOrientationsReference(*m_skeleton_group, m_orientation_names, m_params.sensor_to_opensim);
   }
 
   if (m_rt_ik_tool->runSingleFrameIK(marker_refs, orientation_refs)) {

@@ -4,6 +4,7 @@
 // OpenSim dependencies
 #include "OpenSim/Common/TimeSeriesTable.h"
 #include "OpenSim/Simulation/MarkersReference.h"
+#include "OpenSim/Simulation/Model/Model.h"
 #include "OpenSim/Simulation/OrientationsReference.h"
 
 // Custom external dependencies
@@ -80,6 +81,9 @@ namespace hiros {
         return r;
       }
 
+      std::vector<std::string> getMarkerNames(const OpenSim::Model& t_model);
+      std::vector<std::string> getOrientationNames(OpenSim::Model t_model);
+
       OpenSim::TimeSeriesTable_<SimTK::Vec3>
       toVec3Table(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
                   const std::vector<std::string> t_marker_names,
@@ -93,15 +97,24 @@ namespace hiros {
 
       OpenSim::TimeSeriesTable_<SimTK::Quaternion>
       toQuaternionsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                         const std::vector<std::string> t_orientation_names,
                          const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
       OpenSim::TimeSeriesTable_<SimTK::Rotation>
       toRotationsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                       const std::vector<std::string> t_orientation_names,
                        const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
 
-      OpenSim::Set<OpenSim::OrientationWeight> toOrientationWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
+      OpenSim::Set<OpenSim::OrientationWeight>
+      toOrientationWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                             const std::vector<std::string> t_orientation_names);
       OpenSim::OrientationsReference
       toOrientationsReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
+                              const std::vector<std::string> t_orientation_names,
                               const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+
+      bool isNaN(const OpenSim::TimeSeriesTable_<SimTK::Vec3>& t_vec3_table);
+      bool isNaN(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_quat_table);
+      bool isNaN(const OpenSim::TimeSeriesTable_<SimTK::Rotation>& t_rot_table);
 
     } // namespace utils
   } // namespace opensim_ik

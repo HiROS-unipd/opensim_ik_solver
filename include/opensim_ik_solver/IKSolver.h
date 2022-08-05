@@ -35,7 +35,7 @@ namespace hiros {
       void setupRos();
       void initializeIMUPlacer();
       void initializeThreads();
-      void calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
+      bool calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
 
       void startConsumer();
       void startPublisher();

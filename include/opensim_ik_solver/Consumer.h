@@ -37,6 +37,7 @@ namespace hiros {
       std::shared_ptr<bool> m_processed;
 
       std::vector<std::string> m_marker_names;
+      std::vector<std::string> m_orientation_names;
 
       IKToolParameters m_params;
 

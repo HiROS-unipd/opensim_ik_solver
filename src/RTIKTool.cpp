@@ -318,11 +318,11 @@ void hiros::opensim_ik::RTIKTool::initialize()
   std::shared_ptr<OpenSim::MarkersReference> marker_refs;
   std::shared_ptr<OpenSim::OrientationsReference> orientation_refs;
 
-  if (m_params.use_marker_positions && m_marker_refs->getNumRefs() > 0) {
+  if (m_params.use_marker_positions && m_marker_refs != nullptr && m_marker_refs->getNumRefs() > 0) {
     m_state->updTime() = m_marker_refs->getValidTimeRange().get(0);
     marker_refs = m_marker_refs;
   }
-  if (m_params.use_link_orientations && m_orientation_refs->getNumRefs() > 0) {
+  if (m_params.use_link_orientations && m_orientation_refs != nullptr && m_orientation_refs->getNumRefs() > 0) {
     m_state->updTime() = m_orientation_refs->getTimes().front();
     orientation_refs = m_orientation_refs;
   }

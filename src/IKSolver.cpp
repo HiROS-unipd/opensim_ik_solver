@@ -137,14 +137,22 @@ void hiros::opensim_ik::IKSolver::initializeThreads()
   publisher.detach();
 }
 
-void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg)
+bool hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg)
 {
   if (m_general_params.model_calibration) {
     ROS_INFO_STREAM("OpenSim IK Solver... Calibrating IMUs on model");
 
-    m_rt_imu_placer->runCalibration(utils::toQuaternionsTable(t_msg, m_ik_tool_params.sensor_to_opensim));
+    auto quat_table =
+      utils::toQuaternionsTable(t_msg, utils::getOrientationNames(m_model), m_ik_tool_params.sensor_to_opensim);
+
+    if (utils::isNaN(quat_table)) {
+      return false;
+    }
+
+    m_rt_imu_placer->runCalibration(quat_table);
 
     m_model = m_rt_imu_placer->getCalibratedModel();
+    m_model.finalizeFromProperties();
 
     if (m_imu_placer_params.save_calibrated_model) {
       m_rt_imu_placer->saveModel();
@@ -152,6 +160,8 @@ void hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_skeleton_msgs::Skele
 
     ROS_INFO_STREAM(BASH_MSG_GREEN << "OpenSim IK Solver... CALIBRATED" << BASH_MSG_RESET);
   }
+
+  return true;
 }
 
 void hiros::opensim_ik::IKSolver::startConsumer()
@@ -176,7 +186,9 @@ void hiros::opensim_ik::IKSolver::callback(const hiros_skeleton_msgs::SkeletonGr
 {
   if (!m_initialized) {
     if (m_general_params.model_calibration) {
-      calibrateIMUs(t_msg);
+      if (!calibrateIMUs(t_msg)) {
+        return;
+      }
     }
 
     initializeThreads();
