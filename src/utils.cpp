@@ -228,13 +228,13 @@ bool hiros::opensim_ik::utils::isNaN(const OpenSim::TimeSeriesTable_<SimTK::Vec3
     auto vec3_row = t_vec3_table.getRowAtIndex(row);
 
     for (const auto& vec3 : vec3_row) {
-      if (vec3.isNaN()) {
-        return true;
+      if (!vec3.isNaN()) {
+        return false;
       }
     }
   }
 
-  return false;
+  return true;
 }
 
 bool hiros::opensim_ik::utils::isNaN(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_quat_table)
@@ -243,13 +243,13 @@ bool hiros::opensim_ik::utils::isNaN(const OpenSim::TimeSeriesTable_<SimTK::Quat
     auto quat_row = t_quat_table.getRowAtIndex(row);
 
     for (const auto& quat : quat_row) {
-      if (quat.isNaN()) {
-        return true;
+      if (!quat.isNaN()) {
+        return false;
       }
     }
   }
 
-  return false;
+  return true;
 }
 
 bool hiros::opensim_ik::utils::isNaN(const OpenSim::TimeSeriesTable_<SimTK::Rotation>& t_rot_table)
@@ -258,11 +258,11 @@ bool hiros::opensim_ik::utils::isNaN(const OpenSim::TimeSeriesTable_<SimTK::Rota
     auto rot_row = t_rot_table.getRowAtIndex(row);
 
     for (const auto& rot : rot_row) {
-      if (rot.isNaN()) {
-        return true;
+      if (!rot.isNaN()) {
+        return false;
       }
     }
   }
 
-  return false;
+  return true;
 }
