@@ -168,7 +168,10 @@ void hiros::opensim_ik::RTIMUPlacer::initialize()
     OPENSIM_THROW(OpenSim::Exception, "No model passed to RTIMUPlacer. Call setModel() method.");
   }
 
-  initializeHeadingCorrection();
+  if (m_params.heading_correction) {
+    initializeHeadingCorrection();
+  }
+
   m_model->setUseVisualizer(m_params.use_visualizer);
 
   m_initialized = true;
