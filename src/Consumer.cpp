@@ -45,8 +45,8 @@ void hiros::opensim_ik::Consumer::runIK()
   }
 
   if (m_params.use_link_orientations && !m_skeleton_group->skeletons.front().links.empty()) {
-    orientation_refs =
-      utils::toOrientationsReference(*m_skeleton_group, m_orientation_names, m_params.sensor_to_opensim);
+    orientation_refs = utils::toOrientationsReference(
+      *m_skeleton_group, m_orientation_names, m_params.sensor_to_opensim, m_params.heading_rot_vec);
   }
 
   if (m_rt_ik_tool->runSingleFrameIK(marker_refs, orientation_refs)) {

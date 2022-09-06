@@ -16,6 +16,11 @@ hiros::opensim_ik::RTIMUPlacer::RTIMUPlacer(const OpenSim::Model& t_model, const
   : RTIMUPlacer(t_params)
 {
   setModel(t_model);
+
+  IKToolParameters params;
+  params.accuracy = 1.e-4;
+  params.use_marker_positions = true;
+  m_rt_ik_tool = std::make_unique<hiros::opensim_ik::RTIKTool>(*m_model, params);
 }
 
 hiros::opensim_ik::RTIMUPlacer::~RTIMUPlacer() {}
@@ -52,9 +57,11 @@ void hiros::opensim_ik::RTIMUPlacer::disableVisualizer()
 }
 
 bool hiros::opensim_ik::RTIMUPlacer::runCalibration(
-  const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table)
+  const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table,
+  const OpenSim::MarkersReference& t_markers_reference)
 {
   updateOrientationsTable(t_orientations_table);
+  updateMarkersReference(t_markers_reference);
   return runCalibration();
 }
 
@@ -108,6 +115,15 @@ void hiros::opensim_ik::RTIMUPlacer::setDirectionOnImu()
   }
 }
 
+void hiros::opensim_ik::RTIMUPlacer::updateMarkersReference(const OpenSim::MarkersReference& t_markers_reference)
+{
+  if (t_markers_reference.getNumFrames() <= 0) {
+    return;
+  }
+
+  m_markers_reference = std::make_unique<OpenSim::MarkersReference>(t_markers_reference);
+}
+
 void hiros::opensim_ik::RTIMUPlacer::updateOrientationsTable(
   const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table)
 {
@@ -125,11 +141,17 @@ bool hiros::opensim_ik::RTIMUPlacer::runCalibration()
     initialize();
   }
 
-  // TODO: check if works
-  m_state = std::make_unique<SimTK::State>(m_model->initSystem());
-  m_state->updTime() = m_orientations_table->getIndependentColumn().front();
+  if (m_markers_reference) {
+    m_rt_ik_tool->runSingleFrameIK(*m_markers_reference);
+    m_state = std::make_unique<SimTK::State>(m_rt_ik_tool->getState());
+    m_model->initSystem();
+  }
+  else {
+    m_state = std::make_unique<SimTK::State>(m_model->initSystem());
+    m_state->updTime() = m_orientations_table->getIndependentColumn().front();
+  }
 
-  // Default pose of the model
+  // Default/marker-based pose of the model
   m_model->realizePosition(*m_state.get());
 
   if (m_params.heading_correction) {
@@ -181,15 +203,15 @@ bool hiros::opensim_ik::RTIMUPlacer::applyHeadingCorrection()
 {
   try {
     // Compute the rotation matrix so that (e.g. "pelvis_imu" + SimTK::ZAxis) lines up with model forward (+X)
-    SimTK::Vec3 heading_rotation_vec = OpenSim::OpenSenseUtilities::computeHeadingCorrection(
+    m_heading_rot_vec = OpenSim::OpenSenseUtilities::computeHeadingCorrection(
       *m_model.get(), *m_state.get(), *m_orientations_table.get(), m_params.base_imu_label, m_direction_on_imu);
 
     SimTK::Rotation heading_rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
-                                     heading_rotation_vec[0],
+                                     m_heading_rot_vec[0],
                                      SimTK::XAxis,
-                                     heading_rotation_vec[1],
+                                     m_heading_rot_vec[1],
                                      SimTK::YAxis,
-                                     heading_rotation_vec[2],
+                                     m_heading_rot_vec[2],
                                      SimTK::ZAxis);
 
     OpenSim::OpenSenseUtilities::rotateOrientationTable(*m_orientations_table.get(), heading_rotation);

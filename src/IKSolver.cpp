@@ -69,6 +69,7 @@ void hiros::opensim_ik::IKSolver::getRosParams()
       m_nh.getParam("heading_correction", m_imu_placer_params.heading_correction);
       m_nh.getParam("base_imu_label", m_imu_placer_params.base_imu_label);
       m_nh.getParam("base_heading_axis", m_imu_placer_params.base_heading_axis);
+      m_nh.getParam("use_marker_based_ik_as_initial_pose", m_imu_placer_params.use_marker_based_ik_as_initial_pose);
       m_nh.getParam("save_calibrated_model", m_imu_placer_params.save_calibrated_model);
       m_nh.getParam("visualize_calibration", m_imu_placer_params.use_visualizer);
 
@@ -149,7 +150,11 @@ bool hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_skeleton_msgs::Skele
       return false;
     }
 
-    m_rt_imu_placer->runCalibration(quat_table);
+    auto markers_ref =
+      m_imu_placer_params.use_marker_based_ik_as_initial_pose
+        ? utils::toMarkersReference(t_msg, utils::getMarkerNames(m_model), m_ik_tool_params.sensor_to_opensim)
+        : OpenSim::MarkersReference();
+    m_rt_imu_placer->runCalibration(quat_table, markers_ref);
 
     m_model = m_rt_imu_placer->getCalibratedModel();
     m_model.finalizeFromProperties();
@@ -189,6 +194,7 @@ void hiros::opensim_ik::IKSolver::callback(const hiros_skeleton_msgs::SkeletonGr
       if (!calibrateIMUs(t_msg)) {
         return;
       }
+      m_ik_tool_params.heading_rot_vec = m_rt_imu_placer->getHeadingRotVec();
     }
 
     initializeThreads();

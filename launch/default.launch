@@ -24,6 +24,7 @@
   <arg name="heading_correction"    default="false" />
   <arg name="base_imu_label"        default=""      />
   <arg name="base_heading_axis"     default=""      />
+  <arg name="use_marker_based_ik_as_initial_pose" default="false" />
   <arg name="save_calibrated_model" default="false" />
   <arg name="visualize_calibration" default="false" />
 
@@ -61,6 +62,7 @@
     <param name="heading_correction"    type="bool" value="$(arg heading_correction)"    />
     <param name="base_imu_label"        type="str"  value="$(arg base_imu_label)"        />
     <param name="base_heading_axis"     type="str"  value="$(arg base_heading_axis)"     />
+    <param name="use_marker_based_ik_as_initial_pose" type="bool" value="$(arg use_marker_based_ik_as_initial_pose)" />
     <param name="save_calibrated_model" type="bool" value="$(arg save_calibrated_model)" />
     <param name="visualize_calibration" type="bool" value="$(arg visualize_calibration)" />
 

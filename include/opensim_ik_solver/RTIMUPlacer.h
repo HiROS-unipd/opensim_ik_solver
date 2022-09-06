@@ -6,6 +6,7 @@
 #include "OpenSim/Simulation/OrientationsReference.h"
 
 // Internal dependencies
+#include "opensim_ik_solver/RTIKTool.h"
 #include "opensim_ik_solver/utils.h"
 
 namespace hiros {
@@ -24,7 +25,10 @@ namespace hiros {
       void enableVisualizer();
       void disableVisualizer();
 
-      bool runCalibration(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table);
+      inline SimTK::Vec3 getHeadingRotVec() const { return m_heading_rot_vec; }
+
+      bool runCalibration(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table,
+                          const OpenSim::MarkersReference& t_markers_reference = {});
 
       OpenSim::Model& getCalibratedModel() const;
       void saveModel(const std::string& t_calibrated_model_path);
@@ -34,6 +38,7 @@ namespace hiros {
       void setDirectionOnImu();
 
       void updateOrientationsTable(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table);
+      void updateMarkersReference(const OpenSim::MarkersReference& t_markers_reference);
       bool runCalibration();
 
       void initialize();
@@ -54,8 +59,13 @@ namespace hiros {
       std::vector<OpenSim::Body*> m_bodies;
       std::map<std::string, SimTK::Rotation> m_imu_bodies_in_ground;
 
+      std::unique_ptr<OpenSim::MarkersReference> m_markers_reference;
       std::unique_ptr<OpenSim::TimeSeriesTable_<SimTK::Quaternion>> m_orientations_table;
       OpenSim::TimeSeriesTable_<SimTK::Rotation> m_orientations_data;
+
+      std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
+
+      SimTK::Vec3 m_heading_rot_vec;
 
       std::unique_ptr<SimTK::State> m_state;
       std::unique_ptr<OpenSim::Model> m_model;

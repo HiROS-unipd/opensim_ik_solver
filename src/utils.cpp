@@ -106,7 +106,8 @@ OpenSim::MarkersReference hiros::opensim_ik::utils::toMarkersReference(const hir
 OpenSim::TimeSeriesTable_<SimTK::Quaternion>
 hiros::opensim_ik::utils::toQuaternionsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
                                              const std::vector<std::string> t_orientation_names,
-                                             const SimTK::Rotation& t_sensor_to_opensim)
+                                             const SimTK::Rotation& t_sensor_to_opensim,
+                                             const SimTK::Vec3& t_heading_rot_vec)
 {
   // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
 
@@ -142,19 +143,37 @@ hiros::opensim_ik::utils::toQuaternionsTable(const hiros_skeleton_msgs::Skeleton
   auto quat_table = OpenSim::TimeSeriesTable_<SimTK::Quaternion>(time, quaternion_matrix, imu_labels);
   OpenSim::OpenSenseUtilities::rotateOrientationTable(quat_table, t_sensor_to_opensim);
 
+  SimTK::Rotation heading_rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                                   t_heading_rot_vec[0],
+                                   SimTK::XAxis,
+                                   t_heading_rot_vec[1],
+                                   SimTK::YAxis,
+                                   t_heading_rot_vec[2],
+                                   SimTK::ZAxis);
+  OpenSim::OpenSenseUtilities::rotateOrientationTable(quat_table, heading_rotation);
+
   return quat_table;
 }
 
 OpenSim::TimeSeriesTable_<SimTK::Rotation>
 hiros::opensim_ik::utils::toRotationsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
                                            const std::vector<std::string> t_orientation_names,
-                                           const SimTK::Rotation& t_sensor_to_opensim)
+                                           const SimTK::Rotation& t_sensor_to_opensim,
+                                           const SimTK::Vec3& t_heading_rot_vec)
 {
   // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
 
   unsigned long n_cols = t_orientation_names.size();
 
   std::vector<double> time{t_msg.skeletons.front().src_time.toSec()};
+
+  SimTK::Rotation heading_rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                                   t_heading_rot_vec[0],
+                                   SimTK::XAxis,
+                                   t_heading_rot_vec[1],
+                                   SimTK::YAxis,
+                                   t_heading_rot_vec[2],
+                                   SimTK::ZAxis);
 
   SimTK::Matrix_<SimTK::Rotation> rotation_matrix(1, static_cast<int>(n_cols), SimTK::Rotation());
   std::vector<std::string> imu_labels;
@@ -177,7 +196,7 @@ hiros::opensim_ik::utils::toRotationsTable(const hiros_skeleton_msgs::SkeletonGr
                                                        std::numeric_limits<double>::quiet_NaN(),
                                                        std::numeric_limits<double>::quiet_NaN()));
 
-    rotation_matrix.updElt(0, ++col) = t_sensor_to_opensim * lk_or;
+    rotation_matrix.updElt(0, ++col) = heading_rotation * t_sensor_to_opensim * lk_or;
     imu_labels.push_back(name);
   }
 
@@ -206,11 +225,12 @@ hiros::opensim_ik::utils::toOrientationWeightSet(const hiros_skeleton_msgs::Skel
 OpenSim::OrientationsReference
 hiros::opensim_ik::utils::toOrientationsReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
                                                   const std::vector<std::string> t_orientation_names,
-                                                  const SimTK::Rotation& t_sensor_to_opensim)
+                                                  const SimTK::Rotation& t_sensor_to_opensim,
+                                                  const SimTK::Vec3& t_heading_rot_vec)
 {
   // NB: currently support a single skeleton per skelton group. Only the first skeleton is processed.
 
-  auto rot_table = toRotationsTable(t_msg, t_orientation_names, t_sensor_to_opensim);
+  auto rot_table = toRotationsTable(t_msg, t_orientation_names, t_sensor_to_opensim, t_heading_rot_vec);
   auto orientation_weight_set = toOrientationWeightSet(t_msg, t_orientation_names);
 
   double weights_sum = 0.;

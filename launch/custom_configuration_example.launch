@@ -25,6 +25,7 @@
     <arg name="heading_correction"    value="true"       />
     <arg name="base_imu_label"        value="pelvis_imu" />
     <arg name="base_heading_axis"     value="z"          />
+    <arg name="use_marker_based_ik_as_initial_pose" value="$(arg use_marker_positions)" />
     <arg name="save_calibrated_model" value="true"       />
     <arg name="visualize_calibration" value="true"       />
 

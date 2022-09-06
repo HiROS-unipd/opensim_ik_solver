@@ -35,6 +35,7 @@ namespace hiros {
 
       std::string base_imu_label{};
       std::string base_heading_axis{};
+      bool use_marker_based_ik_as_initial_pose{false};
 
       bool save_calibrated_model{false};
       std::string calibrated_model_path{};
@@ -53,6 +54,7 @@ namespace hiros {
       double orientations_weight{1.};
 
       SimTK::Rotation sensor_to_opensim{};
+      SimTK::Vec3 heading_rot_vec{0, 0, 0};
 
       bool use_visualizer{false};
     };
@@ -98,11 +100,13 @@ namespace hiros {
       OpenSim::TimeSeriesTable_<SimTK::Quaternion>
       toQuaternionsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
                          const std::vector<std::string> t_orientation_names,
-                         const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+                         const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation(),
+                         const SimTK::Vec3& t_heading_rot_vec = SimTK::Vec3(0, 0, 0));
       OpenSim::TimeSeriesTable_<SimTK::Rotation>
       toRotationsTable(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
                        const std::vector<std::string> t_orientation_names,
-                       const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+                       const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation(),
+                       const SimTK::Vec3& t_heading_rot_vec = SimTK::Vec3(0, 0, 0));
 
       OpenSim::Set<OpenSim::OrientationWeight>
       toOrientationWeightSet(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
@@ -110,7 +114,8 @@ namespace hiros {
       OpenSim::OrientationsReference
       toOrientationsReference(const hiros_skeleton_msgs::SkeletonGroup& t_msg,
                               const std::vector<std::string> t_orientation_names,
-                              const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation());
+                              const SimTK::Rotation& t_sensor_to_opensim = SimTK::Rotation(),
+                              const SimTK::Vec3& t_heading_rot_vec = SimTK::Vec3(0, 0, 0));
 
       bool isNaN(const OpenSim::TimeSeriesTable_<SimTK::Vec3>& t_vec3_table);
       bool isNaN(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_quat_table);
