@@ -45,7 +45,7 @@ namespace hiros {
 
     struct IKToolParameters
     {
-      double accuracy{1.e4};
+      double accuracy{1.e-4};
 
       bool use_marker_positions{false};
       bool use_link_orientations{false};
