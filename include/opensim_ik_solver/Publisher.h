@@ -2,8 +2,9 @@
 #define hiros_opensim_ik_solver_Publisher_h
 
 // ROS dependencies
-#include "ros/ros.h"
-#include "sensor_msgs/JointState.h"
+#include <rclcpp/rclcpp.hpp>
+
+#include "sensor_msgs/msg/joint_state.hpp"
 
 // Internal dependencies
 #include "opensim_ik_solver/PublisherData.h"
@@ -11,24 +12,27 @@
 #include "opensim_ik_solver/utils.h"
 
 namespace hiros {
-  namespace opensim_ik {
+namespace opensim_ik {
 
-    class Publisher
-    {
-    public:
-      Publisher(SkelGroupToPubDataQueuePtr t_queue_ptr, const ros::NodeHandle& t_nh, const GeneralParameters& t_params);
+class Publisher {
+ public:
+  Publisher(SkelGroupToPubDataQueuePtr queue_ptr,
+            std::shared_ptr<rclcpp::Node> node,
+            const GeneralParameters& params);
 
-      void publish();
+  void publish();
 
-    private:
-      ros::NodeHandle m_nh;
-      ros::Publisher m_js_pub;
-      ros::Publisher m_sg_pub;
+ private:
+  std::shared_ptr<rclcpp::Node> node_{};
 
-      SkelGroupToPubDataQueuePtr m_queue_ptr;
-    };
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr js_pub_{};
+  rclcpp::Publisher<hiros_skeleton_msgs::msg::SkeletonGroup>::SharedPtr
+      sg_pub_{};
 
-  } // namespace opensim_ik
-} // namespace hiros
+  SkelGroupToPubDataQueuePtr queue_ptr_{};
+};
+
+}  // namespace opensim_ik
+}  // namespace hiros
 
 #endif

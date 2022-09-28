@@ -2,11 +2,11 @@
 #define hiros_opensim_ik_solver_IKSolver_h
 
 // ROS dependencies
-#include "ros/ros.h"
-#include "sensor_msgs/JointState.h"
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 
 // Skeleton messages dependencies
-#include "hiros_skeleton_msgs/SkeletonGroup.h"
+#include "hiros_skeleton_msgs/msg/skeleton_group.hpp"
 
 // Internal dependencies
 #include "opensim_ik_solver/PublisherData.h"
@@ -19,48 +19,52 @@
 #define BASH_MSG_GREEN "\033[32m"
 
 namespace hiros {
-  namespace opensim_ik {
+namespace opensim_ik {
 
-    class IKSolver
-    {
-    public:
-      IKSolver();
-      virtual ~IKSolver() {}
+class IKSolver : public rclcpp::Node {
+ public:
+  IKSolver();
+  ~IKSolver();
 
-      void start();
-      void run();
+ private:
+  template <typename T>
+  bool getParam(const std::string& name, T& parameter) {
+    declare_parameter<T>(name);
+    return get_parameter(name, parameter);
+  }
 
-    private:
-      void getRosParams();
-      void setupRos();
-      void initializeIMUPlacer();
-      void initializeThreads();
-      bool calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
+  void start();
+  void stop() const;
+  void configure();
 
-      void startConsumer();
-      void startPublisher();
+  void getParams();
+  void setupRosTopics();
+  void initializeIMUPlacer();
+  void initializeThreads();
+  bool calibrateIMUs(const hiros_skeleton_msgs::msg::SkeletonGroup& msg);
 
-      void callback(const hiros_skeleton_msgs::SkeletonGroup& t_msg);
+  void startConsumer();
+  void startPublisher();
 
-      GeneralParameters m_general_params;
-      IMUPlacerParameters m_imu_placer_params;
-      IKToolParameters m_ik_tool_params;
+  void callback(const hiros_skeleton_msgs::msg::SkeletonGroup& msg);
 
-      OpenSim::Model m_model;
-      std::unique_ptr<hiros::opensim_ik::RTIMUPlacer> m_rt_imu_placer;
-      std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
+  GeneralParameters general_params_{};
+  IMUPlacerParameters imu_placer_params_{};
+  IKToolParameters ik_tool_params_{};
 
-      bool m_configured;
+  OpenSim::Model model_{};
+  std::unique_ptr<hiros::opensim_ik::RTIMUPlacer> rt_imu_placer_{};
+  std::unique_ptr<hiros::opensim_ik::RTIKTool> rt_ik_tool_{};
 
-      ros::NodeHandle m_nh;
-      std::string m_node_namespace;
-      ros::Subscriber m_orientations_sub;
-      bool m_initialized;
+  rclcpp::Subscription<hiros_skeleton_msgs::msg::SkeletonGroup>::SharedPtr
+      sub_{};
 
-      SkelGroupToPubDataQueue m_queue;
-    };
+  bool initialized_{false};
 
-  } // namespace opensim_ik
-} // namespace hiros
+  SkelGroupToPubDataQueue queue_{};
+};
+
+}  // namespace opensim_ik
+}  // namespace hiros
 
 #endif

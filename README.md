@@ -54,18 +54,10 @@ updAssembler().adoptAssemblyGoal(condOwner.release(), _orientations_weight);
 ```
 
 
-## Launch files
-**default.launch**
-Contains the default values for each parameter
-
-**custom\_configuration\_example.launch**
-Contains an example on how to set some parameters of choice
-
-
 ## Usage
 Skeleton's marker names must correspond to the virtual markers defined in the model.
 Skeleton's link names must correspond to the virtual IMUs defined in the model.
 
 ```
-roslaunch hiros_opensim_ik_solver custom_configuration_example.launch
+ros2 launch hiros_opensim_ik_solver default.launch.py
 ```

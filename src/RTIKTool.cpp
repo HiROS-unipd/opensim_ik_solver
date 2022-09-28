@@ -1,162 +1,162 @@
 // Internal dependencies
 #include "opensim_ik_solver/RTIKTool.h"
 
-hiros::opensim_ik::RTIKTool::RTIKTool(const IKToolParameters& t_params)
-  : m_initialized(false)
-  , m_params(t_params)
-{
-  m_params.use_visualizer = false; // TODO: currently not supported
+hiros::opensim_ik::RTIKTool::RTIKTool(const IKToolParameters& params)
+    : params_(params) {
+  params_.use_visualizer = false;  // TODO: currently not supported
 }
 
-hiros::opensim_ik::RTIKTool::RTIKTool(const OpenSim::Model& t_model, const IKToolParameters& t_params)
-  : RTIKTool(t_params)
-{
-  setModel(t_model);
+hiros::opensim_ik::RTIKTool::RTIKTool(const OpenSim::Model& model,
+                                      const IKToolParameters& params)
+    : RTIKTool(params) {
+  setModel(model);
 }
 
 hiros::opensim_ik::RTIKTool::~RTIKTool() {}
 
-void hiros::opensim_ik::RTIKTool::setModel(const OpenSim::Model& t_model)
-{
-  m_model = std::make_unique<OpenSim::Model>(t_model);
-  m_model->finalizeFromProperties();
-  m_initialized = false;
+void hiros::opensim_ik::RTIKTool::setModel(const OpenSim::Model& model) {
+  model_ = std::make_unique<OpenSim::Model>(model);
+  model_->finalizeFromProperties();
+  initialized_ = false;
 }
 
-void hiros::opensim_ik::RTIKTool::enableVisualizer()
-{
-  m_params.use_visualizer = true;
-  m_model->setUseVisualizer(m_params.use_visualizer);
+void hiros::opensim_ik::RTIKTool::enableVisualizer() {
+  params_.use_visualizer = true;
+  model_->setUseVisualizer(params_.use_visualizer);
 }
 
-void hiros::opensim_ik::RTIKTool::disableVisualizer()
-{
-  m_params.use_visualizer = false;
-  m_model->setUseVisualizer(m_params.use_visualizer);
+void hiros::opensim_ik::RTIKTool::disableVisualizer() {
+  params_.use_visualizer = false;
+  model_->setUseVisualizer(params_.use_visualizer);
 }
 
-bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(const OpenSim::MarkersReference& t_marker_refs,
-                                                   const OpenSim::OrientationsReference& t_orientation_refs)
-{
-  updateReference(t_marker_refs, t_orientation_refs);
+bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(
+    const OpenSim::MarkersReference& marker_refs,
+    const OpenSim::OrientationsReference& orientation_refs) {
+  updateReference(marker_refs, orientation_refs);
   return runSingleFrameIK();
 }
 
-bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(const OpenSim::OrientationsReference& t_orientation_refs)
-{
-  updateReference(t_orientation_refs);
+bool hiros::opensim_ik::RTIKTool::runSingleFrameIK(
+    const OpenSim::OrientationsReference& orientation_refs) {
+  updateReference(orientation_refs);
   return runSingleFrameIK();
 }
 
-void hiros::opensim_ik::RTIKTool::updateReference(const OpenSim::MarkersReference& t_marker_refs,
-                                                  const OpenSim::OrientationsReference& t_orientation_refs)
-{
-  m_marker_refs = std::make_shared<OpenSim::MarkersReference>(t_marker_refs);
-  m_orientation_refs = std::make_shared<OpenSim::OrientationsReference>(t_orientation_refs);
+void hiros::opensim_ik::RTIKTool::updateReference(
+    const OpenSim::MarkersReference& marker_refs,
+    const OpenSim::OrientationsReference& orientation_refs) {
+  marker_refs_ = std::make_shared<OpenSim::MarkersReference>(marker_refs);
+  orientation_refs_ =
+      std::make_shared<OpenSim::OrientationsReference>(orientation_refs);
 }
 
-void hiros::opensim_ik::RTIKTool::updateReference(const OpenSim::OrientationsReference& t_orientation_refs)
-{
-  m_orientation_refs = std::make_shared<OpenSim::OrientationsReference>(t_orientation_refs);
+void hiros::opensim_ik::RTIKTool::updateReference(
+    const OpenSim::OrientationsReference& orientation_refs) {
+  orientation_refs_ =
+      std::make_shared<OpenSim::OrientationsReference>(orientation_refs);
 }
 
-bool hiros::opensim_ik::RTIKTool::runSingleFrameIK()
-{
+bool hiros::opensim_ik::RTIKTool::runSingleFrameIK() {
   bool ik_failed = true;
 
-  if (m_params.use_marker_positions) {
-    if (m_marker_refs && m_marker_refs->getNumFrames() == 1) {
-      if (!m_initialized) {
+  if (params_.use_marker_positions) {
+    if (marker_refs_ && marker_refs_->getNumFrames() == 1) {
+      if (!initialized_) {
         initialize();
       }
 
-      m_state->updTime() = m_marker_refs->getValidTimeRange().get(0);
+      state_->updTime() = marker_refs_->getValidTimeRange().get(0);
       ik_failed = false;
     }
 
-    if (m_initialized) {
-      m_ik_solver->updateMarkersReference(m_marker_refs);
+    if (initialized_) {
+      ik_solver_->updateMarkersReference(marker_refs_);
     }
   }
 
-  if (m_params.use_link_orientations) {
-    if (m_orientation_refs && m_orientation_refs->getTimes().size() == 1) {
-      if (!m_initialized) {
+  if (params_.use_link_orientations) {
+    if (orientation_refs_ && orientation_refs_->getTimes().size() == 1) {
+      if (!initialized_) {
         initialize();
       }
 
-      m_state->updTime() = m_orientation_refs->getTimes().front();
+      state_->updTime() = orientation_refs_->getTimes().front();
       ik_failed = false;
     }
 
-    if (m_initialized) {
-      m_ik_solver->updateOrientationsReference(m_orientation_refs);
+    if (initialized_) {
+      ik_solver_->updateOrientationsReference(orientation_refs_);
     }
   }
 
-  m_marker_refs.reset();
-  m_orientation_refs.reset();
+  marker_refs_.reset();
+  orientation_refs_.reset();
 
   if (ik_failed) {
     return false;
   }
 
-  m_ik_solver->assemble(*m_state);
-  m_model->realizeReport(*m_state);
+  ik_solver_->assemble(*state_);
+  model_->realizeReport(*state_);
 
-  if (m_params.use_visualizer) {
-    m_model->getVisualizer().show(*m_state);
+  if (params_.use_visualizer) {
+    model_->getVisualizer().show(*state_);
   }
 
   return true;
 }
 
-std::string hiros::opensim_ik::RTIKTool::getJointAngleName(int t_idx) const
-{
-  if (t_idx < 0 || t_idx >= m_model->getCoordinateSet().getSize()) {
-    std::cerr << "RTIKTool Warning: Joint angle with index " << t_idx << " not found" << std::endl;
+std::string hiros::opensim_ik::RTIKTool::getJointAngleName(int idx) const {
+  if (idx < 0 || idx >= model_->getCoordinateSet().getSize()) {
+    std::cerr << "RTIKTool Warning: Joint angle with index " << idx
+              << " not found" << std::endl;
     return std::string();
   }
 
-  return m_model->getCoordinateSet().get(t_idx).getName();
+  return model_->getCoordinateSet().get(idx).getName();
 }
 
-double hiros::opensim_ik::RTIKTool::getJointAnglePosition(int t_idx, bool t_in_degrees) const
-{
-  if (t_idx < 0 || t_idx >= m_model->getCoordinateSet().getSize()) {
-    std::cerr << "RTIKTool Warning: Joint angle with index " << t_idx << " not found" << std::endl;
+double hiros::opensim_ik::RTIKTool::getJointAngleValue(int idx,
+                                                       bool in_degrees) const {
+  if (idx < 0 || idx >= model_->getCoordinateSet().getSize()) {
+    std::cerr << "RTIKTool Warning: Joint angle with index " << idx
+              << " not found" << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  double val = m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "value");
+  double val = model_->getCoordinateSet().get(idx).getStateVariableValue(
+      *state_, "value");
 
-  if (t_in_degrees
-      && m_model->getCoordinateSet().get(t_idx).getMotionType() == OpenSim::Coordinate::MotionType::Rotational) {
+  if (in_degrees && model_->getCoordinateSet().get(idx).getMotionType() ==
+                        OpenSim::Coordinate::MotionType::Rotational) {
     return val * static_cast<double>(SimTK_RADIAN_TO_DEGREE);
   }
   return val;
 }
 
-double hiros::opensim_ik::RTIKTool::getJointAngleVelocity(int t_idx, bool t_in_degrees) const
-{
-  if (t_idx < 0 || t_idx >= m_model->getCoordinateSet().getSize()) {
-    std::cerr << "RTIKTool Warning: Joint angle with index " << t_idx << " not found" << std::endl;
+double hiros::opensim_ik::RTIKTool::getJointAngleVelocity(
+    int idx, bool in_degrees) const {
+  if (idx < 0 || idx >= model_->getCoordinateSet().getSize()) {
+    std::cerr << "RTIKTool Warning: Joint angle with index " << idx
+              << " not found" << std::endl;
     return std::numeric_limits<double>::quiet_NaN();
   }
 
-  double val = m_model->getCoordinateSet().get(t_idx).getStateVariableValue(*m_state, "speed");
+  double val = model_->getCoordinateSet().get(idx).getStateVariableValue(
+      *state_, "speed");
 
   // TODO: check if it works
-  if (t_in_degrees
-      && m_model->getCoordinateSet().get(t_idx).getMotionType() == OpenSim::Coordinate::MotionType::Rotational) {
+  if (in_degrees && model_->getCoordinateSet().get(idx).getMotionType() ==
+                        OpenSim::Coordinate::MotionType::Rotational) {
     return val * static_cast<double>(SimTK_RADIAN_TO_DEGREE);
   }
   return val;
 }
 
-std::vector<std::string> hiros::opensim_ik::RTIKTool::getJointAngleNames() const
-{
-  auto n_joint_angles = m_model->getCoordinateSet().getSize();
+std::vector<std::string> hiros::opensim_ik::RTIKTool::getJointAngleNames()
+    const {
+  auto n_joint_angles = model_->getCoordinateSet().getSize();
   if (n_joint_angles <= 0) {
     std::cerr << "RTIKTool Warning: No joint angle names found" << std::endl;
   }
@@ -169,85 +169,86 @@ std::vector<std::string> hiros::opensim_ik::RTIKTool::getJointAngleNames() const
   return values;
 }
 
-std::vector<double> hiros::opensim_ik::RTIKTool::getJointAnglePositions(bool t_in_degrees) const
-{
-  auto n_joint_angles = m_model->getCoordinateSet().getSize();
+std::vector<double> hiros::opensim_ik::RTIKTool::getJointAngleValues(
+    bool in_degrees) const {
+  auto n_joint_angles = model_->getCoordinateSet().getSize();
   if (n_joint_angles <= 0) {
-    std::cerr << "RTIKTool Warning: No joint angle positions found" << std::endl;
+    std::cerr << "RTIKTool Warning: No joint angle positions found"
+              << std::endl;
   }
 
   std::vector<double> values;
   values.reserve(static_cast<size_t>(n_joint_angles));
   for (int ja_idx = 0; ja_idx < n_joint_angles; ++ja_idx) {
-    values.push_back(getJointAnglePosition(ja_idx, t_in_degrees));
+    values.push_back(getJointAngleValue(ja_idx, in_degrees));
   }
   return values;
 }
 
-std::vector<double> hiros::opensim_ik::RTIKTool::getJointAngleVelocities(bool t_in_degrees) const
-{
-  auto n_joint_angles = m_model->getCoordinateSet().getSize();
+std::vector<double> hiros::opensim_ik::RTIKTool::getJointAngleVelocities(
+    bool in_degrees) const {
+  auto n_joint_angles = model_->getCoordinateSet().getSize();
   if (n_joint_angles <= 0) {
-    std::cerr << "RTIKTool Warning: No joint angle velocities found" << std::endl;
+    std::cerr << "RTIKTool Warning: No joint angle velocities found"
+              << std::endl;
   }
 
   std::vector<double> values;
   values.reserve(static_cast<size_t>(n_joint_angles));
   for (int ja_idx = 0; ja_idx < n_joint_angles; ++ja_idx) {
-    values.push_back(getJointAngleVelocity(ja_idx, t_in_degrees));
+    values.push_back(getJointAngleVelocity(ja_idx, in_degrees));
   }
   return values;
 }
 
-std::string hiros::opensim_ik::RTIKTool::getMarkerName(int t_idx) const
-{
-  if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
-    std::cerr << "RTIKTool Warning: Marker with index " << t_idx << " not found" << std::endl;
+std::string hiros::opensim_ik::RTIKTool::getMarkerName(int idx) const {
+  if (idx < 0 || idx >= model_->getMarkerSet().getSize()) {
+    std::cerr << "RTIKTool Warning: Marker with index " << idx << " not found"
+              << std::endl;
     return std::string();
   }
 
-  return m_model->getMarkerSet().get(t_idx).getName();
+  return model_->getMarkerSet().get(idx).getName();
 }
 
-SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerPosition(int t_idx) const
-{
-  if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
-    std::cerr << "RTIKTool Warning: Marker with index " << t_idx << " not found" << std::endl;
+SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerPosition(int idx) const {
+  if (idx < 0 || idx >= model_->getMarkerSet().getSize()) {
+    std::cerr << "RTIKTool Warning: Marker with index " << idx << " not found"
+              << std::endl;
     return SimTK::Vec3(std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN());
   }
 
-  return m_model->getMarkerSet().get(t_idx).getLocationInGround(*m_state);
+  return model_->getMarkerSet().get(idx).getLocationInGround(*state_);
 }
 
-SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerVelocity(int t_idx) const
-{
-  if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
-    std::cerr << "RTIKTool Warning: Marker with index " << t_idx << " not found" << std::endl;
+SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerVelocity(int idx) const {
+  if (idx < 0 || idx >= model_->getMarkerSet().getSize()) {
+    std::cerr << "RTIKTool Warning: Marker with index " << idx << " not found"
+              << std::endl;
     return SimTK::Vec3(std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN());
   }
 
-  return m_model->getMarkerSet().get(t_idx).getVelocityInGround(*m_state);
+  return model_->getMarkerSet().get(idx).getVelocityInGround(*state_);
 }
 
-SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerAcceleration(int t_idx) const
-{
-  if (t_idx < 0 || t_idx >= m_model->getMarkerSet().getSize()) {
-    std::cerr << "RTIKTool Warning: Marker with index " << t_idx << " not found" << std::endl;
+SimTK::Vec3 hiros::opensim_ik::RTIKTool::getMarkerAcceleration(int idx) const {
+  if (idx < 0 || idx >= model_->getMarkerSet().getSize()) {
+    std::cerr << "RTIKTool Warning: Marker with index " << idx << " not found"
+              << std::endl;
     return SimTK::Vec3(std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN(),
                        std::numeric_limits<double>::quiet_NaN());
   }
 
-  return m_model->getMarkerSet().get(t_idx).getAccelerationInGround(*m_state);
+  return model_->getMarkerSet().get(idx).getAccelerationInGround(*state_);
 }
 
-std::vector<std::string> hiros::opensim_ik::RTIKTool::getMarkerNames() const
-{
-  auto n_markers = m_model->getMarkerSet().getSize();
+std::vector<std::string> hiros::opensim_ik::RTIKTool::getMarkerNames() const {
+  auto n_markers = model_->getMarkerSet().getSize();
   if (n_markers <= 0) {
     std::cerr << "RTIKTool Warning: No marker names found" << std::endl;
   }
@@ -260,9 +261,9 @@ std::vector<std::string> hiros::opensim_ik::RTIKTool::getMarkerNames() const
   return values;
 }
 
-std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerPositions() const
-{
-  auto n_markers = m_model->getMarkerSet().getSize();
+std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerPositions()
+    const {
+  auto n_markers = model_->getMarkerSet().getSize();
   if (n_markers <= 0) {
     std::cerr << "RTIKTool Warning: No marker positions found" << std::endl;
   }
@@ -275,9 +276,9 @@ std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerPositions() const
   return values;
 }
 
-std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerVelocities() const
-{
-  auto n_markers = m_model->getMarkerSet().getSize();
+std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerVelocities()
+    const {
+  auto n_markers = model_->getMarkerSet().getSize();
   if (n_markers <= 0) {
     std::cerr << "RTIKTool Warning: No marker velocities found" << std::endl;
   }
@@ -290,11 +291,12 @@ std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerVelocities() cons
   return values;
 }
 
-std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerAccelerations() const
-{
-  auto n_markers = m_model->getMarkerSet().getSize();
+std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerAccelerations()
+    const {
+  auto n_markers = model_->getMarkerSet().getSize();
   if (n_markers <= 0) {
-    std::cerr << "RTIKTool Warning: No marker acccelerations found" << std::endl;
+    std::cerr << "RTIKTool Warning: No marker acccelerations found"
+              << std::endl;
   }
 
   std::vector<SimTK::Vec3> values;
@@ -305,42 +307,46 @@ std::vector<SimTK::Vec3> hiros::opensim_ik::RTIKTool::getMarkerAccelerations() c
   return values;
 }
 
-void hiros::opensim_ik::RTIKTool::initialize()
-{
-  if (!m_model) {
-    std::cerr << "RTIKTool Error: A model must be set before running IK" << std::endl;
+void hiros::opensim_ik::RTIKTool::initialize() {
+  if (!model_) {
+    std::cerr << "RTIKTool Error: A model must be set before running IK"
+              << std::endl;
     exit(EXIT_FAILURE);
   }
 
-  m_state = std::make_unique<SimTK::State>(m_model->initSystem());
-  *m_state = m_model->initSystem();
+  state_ = std::make_unique<SimTK::State>(model_->initSystem());
+  //  *m_state = m_model->initSystem(); TODO: ?
 
   std::shared_ptr<OpenSim::MarkersReference> marker_refs;
   std::shared_ptr<OpenSim::OrientationsReference> orientation_refs;
 
-  if (m_params.use_marker_positions && m_marker_refs != nullptr && m_marker_refs->getNumRefs() > 0) {
-    m_state->updTime() = m_marker_refs->getValidTimeRange().get(0);
-    marker_refs = m_marker_refs;
+  if (params_.use_marker_positions && marker_refs_ != nullptr &&
+      marker_refs_->getNumRefs() > 0) {
+    state_->updTime() = marker_refs_->getValidTimeRange().get(0);
+    marker_refs = marker_refs_;
   }
-  if (m_params.use_link_orientations && m_orientation_refs != nullptr && m_orientation_refs->getNumRefs() > 0) {
-    m_state->updTime() = m_orientation_refs->getTimes().front();
-    orientation_refs = m_orientation_refs;
+  if (params_.use_link_orientations && orientation_refs_ != nullptr &&
+      orientation_refs_->getNumRefs() > 0) {
+    state_->updTime() = orientation_refs_->getTimes().front();
+    orientation_refs = orientation_refs_;
   }
 
   SimTK::Array_<OpenSim::CoordinateReference> coordinate_refs;
 
-  m_ik_solver =
-    std::make_unique<OpenSim::InverseKinematicsSolver>(*m_model.get(), marker_refs, orientation_refs, coordinate_refs);
-  m_ik_solver->updateMarkersWeight(m_params.markers_weight);
-  m_ik_solver->updateOrientationsWeight(m_params.orientations_weight);
-  m_ik_solver->setAccuracy(m_params.accuracy);
-  m_ik_solver->assemble(*m_state);
+  ik_solver_ = std::make_unique<OpenSim::InverseKinematicsSolver>(
+      *model_.get(), marker_refs, orientation_refs, coordinate_refs);
+  ik_solver_->updateMarkersWeight(params_.markers_weight);
+  ik_solver_->updateOrientationsWeight(params_.orientations_weight);
+  ik_solver_->setAccuracy(params_.accuracy);
+  ik_solver_->assemble(*state_);
 
-  if (m_params.use_visualizer) {
-    m_model->updVisualizer().updSimbodyVisualizer().setWindowTitle(m_model->getName() + " - Inverse Kinematics");
-    m_model->updVisualizer().updSimbodyVisualizer().setDesiredFrameRate(std::numeric_limits<double>::max());
-    m_model->updVisualizer().updSimbodyVisualizer().setShowFrameRate(true);
+  if (params_.use_visualizer) {
+    model_->updVisualizer().updSimbodyVisualizer().setWindowTitle(
+        model_->getName() + " - Inverse Kinematics");
+    model_->updVisualizer().updSimbodyVisualizer().setDesiredFrameRate(
+        std::numeric_limits<double>::max());
+    model_->updVisualizer().updSimbodyVisualizer().setShowFrameRate(true);
   }
 
-  m_initialized = true;
+  initialized_ = true;
 }

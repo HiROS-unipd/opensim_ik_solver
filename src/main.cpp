@@ -1,18 +1,8 @@
-// ROS dependencies
-#include "ros/ros.h"
-
-// Internal dependencies
 #include "opensim_ik_solver/IKSolver.h"
-#include "opensim_ik_solver/Queue.h"
 
-int main(int argc, char* argv[])
-{
-  std::string node_name = "hiros_opensim_ik_solver";
-  ros::init(argc, argv, node_name);
-
-  hiros::opensim_ik::IKSolver ik_solver;
-  ik_solver.start();
-  ik_solver.run();
-
+int main(int argc, char* argv[]) {
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<hiros::opensim_ik::IKSolver>());
+  rclcpp::shutdown();
   exit(EXIT_SUCCESS);
 }

@@ -7,129 +7,134 @@
 #include "opensim_ik_solver/Publisher.h"
 #include "opensim_ik_solver/utils.h"
 
-hiros::opensim_ik::IKSolver::IKSolver()
-  : m_configured(false)
-  , m_nh("~")
-  , m_node_namespace(m_nh.getNamespace())
-  , m_initialized(false)
-{}
+hiros::opensim_ik::IKSolver::IKSolver() : Node("hiros_opensim_ik_solver") {
+  start();
+}
 
-void hiros::opensim_ik::IKSolver::start()
-{
-  ROS_INFO_STREAM("OpenSim IK Solver... Starting");
+hiros::opensim_ik::IKSolver::~IKSolver() { stop(); }
 
-  getRosParams();
-  setupRos();
+void hiros::opensim_ik::IKSolver::start() {
+  configure();
+
+  RCLCPP_INFO_STREAM(get_logger(), BASH_MSG_GREEN
+                                       << "Hi-ROS OpenSim IK Solver... RUNNING"
+                                       << BASH_MSG_RESET);
+}
+
+void hiros::opensim_ik::IKSolver::stop() const {
+  RCLCPP_INFO_STREAM(get_logger(), BASH_MSG_GREEN
+                                       << "Hi-ROS OpenSim IK Solver... STOPPED"
+                                       << BASH_MSG_RESET);
+
+  rclcpp::shutdown();
+}
+
+void hiros::opensim_ik::IKSolver::configure() {
+  getParams();
+  setupRosTopics();
+
   initializeIMUPlacer();
 }
 
-void hiros::opensim_ik::IKSolver::run()
-{
-  ROS_INFO_STREAM(BASH_MSG_GREEN << "OpenSim IK Solver... RUNNING" << BASH_MSG_RESET);
-
-  ros::spin();
-}
-
-void hiros::opensim_ik::IKSolver::getRosParams()
-{
-  ROS_DEBUG_STREAM("OpenSim IK Solver... Configuring Solver");
-
+void hiros::opensim_ik::IKSolver::getParams() {
   // General Parameters
-  m_nh.getParam("n_threads", m_general_params.n_threads);
-  m_nh.getParam("use_marker_positions", m_general_params.use_marker_positions);
-  m_nh.getParam("use_link_orientations", m_general_params.use_link_orientations);
-  m_nh.getParam("model_path", m_general_params.model_path);
-  m_nh.getParam("model_scaling", m_general_params.model_scaling);
-  m_nh.getParam("model_calibration", m_general_params.model_calibration);
-  m_nh.getParam("input_topic", m_general_params.input_topic);
-  m_nh.getParam("out_joint_state_topic", m_general_params.out_joint_state_topic);
-  m_nh.getParam("out_skeleton_group_topic", m_general_params.out_skeleton_group_topic);
+  getParam("n_threads", general_params_.n_threads);
+  getParam("use_marker_positions", general_params_.use_marker_positions);
+  getParam("use_link_orientations", general_params_.use_link_orientations);
+  getParam("model_path", general_params_.model_path);
+  getParam("model_calibration", general_params_.model_calibration);
+  getParam("input_topic", general_params_.input_topic);
+  getParam("out_joint_state_topic", general_params_.out_joint_state_topic);
+  getParam("out_skeleton_group_topic",
+           general_params_.out_skeleton_group_topic);
 
-  if (!m_general_params.use_marker_positions && !m_general_params.use_link_orientations) {
-    ROS_FATAL_STREAM("OpenSim IK Solver Error: Either 'use_marker_positions' or 'use_link_orientations' must be set to "
-                     "'true'. Closing");
+  if (!general_params_.use_marker_positions &&
+      !general_params_.use_link_orientations) {
+    RCLCPP_FATAL_STREAM(
+        get_logger(),
+        "Hi-ROS OpenSim IK Solver Error: Either 'use_marker_positions' or "
+        "'use_link_orientations' must be set to 'true'. Closing");
+    stop();
     exit(EXIT_FAILURE);
   }
 
-  if (m_general_params.model_path.empty()) {
-    ROS_FATAL_STREAM("OpenSim IK Solver Error: Either 'model_path' is required. Closing");
+  if (general_params_.model_path.empty()) {
+    RCLCPP_FATAL_STREAM(get_logger(),
+                        "Hi-ROS OpenSim IK Solver Error: Either 'model_path' "
+                        "is required. Closing");
+    stop();
     exit(EXIT_FAILURE);
   }
-  m_model = OpenSim::Model(m_general_params.model_path);
+  model_ = OpenSim::Model(general_params_.model_path);
 
   // IMU Placer Parameters
-  if (m_general_params.model_calibration) {
-    if (!m_general_params.use_link_orientations) {
-      ROS_WARN_STREAM(
-        "OpenSim IK Solver Warning: Model calibration requires 'use_link_orientations' to be 'true'. Skipping");
+  if (general_params_.model_calibration) {
+    if (!general_params_.use_link_orientations) {
+      RCLCPP_WARN_STREAM(
+          get_logger(),
+          "Hi-ROS OpenSim IK Solver Warning: Model calibration requires "
+          "'use_link_orientations' to be 'true'. Skipping");
 
-      m_general_params.model_calibration = false;
-    }
-    else {
-      m_nh.getParam("heading_correction", m_imu_placer_params.heading_correction);
-      m_nh.getParam("base_imu_label", m_imu_placer_params.base_imu_label);
-      m_nh.getParam("base_heading_axis", m_imu_placer_params.base_heading_axis);
-      m_nh.getParam("use_marker_based_ik_as_initial_pose", m_imu_placer_params.use_marker_based_ik_as_initial_pose);
-      m_nh.getParam("save_calibrated_model", m_imu_placer_params.save_calibrated_model);
-      m_nh.getParam("visualize_calibration", m_imu_placer_params.use_visualizer);
+      general_params_.model_calibration = false;
+    } else {
+      getParam("heading_correction", imu_placer_params_.heading_correction);
+      getParam("base_imu_label", imu_placer_params_.base_imu_label);
+      getParam("base_heading_axis", imu_placer_params_.base_heading_axis);
+      getParam("use_marker_based_ik_as_initial_pose",
+               imu_placer_params_.use_marker_based_ik_as_initial_pose);
+      getParam("save_calibrated_model",
+               imu_placer_params_.save_calibrated_model);
+      getParam("visualize_calibration", imu_placer_params_.use_visualizer);
 
-      if (m_imu_placer_params.save_calibrated_model) {
-        unsigned long ix = m_general_params.model_path.rfind(".osim");
-        std::string front = m_general_params.model_path.substr(0, ix);
-        std::string back = m_general_params.model_path.substr(ix);
-        m_imu_placer_params.calibrated_model_path = front + "_calibrated" + back;
+      if (imu_placer_params_.save_calibrated_model) {
+        unsigned long ix = general_params_.model_path.rfind(".osim");
+        std::string front = general_params_.model_path.substr(0, ix);
+        std::string back = general_params_.model_path.substr(ix);
+        imu_placer_params_.calibrated_model_path = front + "_calibrated" + back;
       }
     }
   }
 
   // IK Tools Parameters
-  m_nh.getParam("accuracy", m_ik_tool_params.accuracy);
-  m_nh.getParam("visualize_ik", m_ik_tool_params.use_visualizer);
+  getParam("accuracy", ik_tool_params_.accuracy);
+  getParam("visualize_ik", ik_tool_params_.use_visualizer);
 
-  if (m_general_params.use_marker_positions) {
-    m_nh.getParam("markers_weight", m_ik_tool_params.markers_weight);
+  if (general_params_.use_marker_positions) {
+    getParam("markers_weight", ik_tool_params_.markers_weight);
   }
 
-  if (m_general_params.use_link_orientations) {
-    m_nh.getParam("orientations_weight", m_ik_tool_params.orientations_weight);
+  if (general_params_.use_link_orientations) {
+    getParam("orientations_weight", ik_tool_params_.orientations_weight);
   }
 
   double sensor_to_opensim_x, sensor_to_opensim_y, sensor_to_opensim_z;
-  m_nh.getParam("sensor_to_opensim_rotation_x", sensor_to_opensim_x);
-  m_nh.getParam("sensor_to_opensim_rotation_y", sensor_to_opensim_y);
-  m_nh.getParam("sensor_to_opensim_rotation_z", sensor_to_opensim_z);
-  m_ik_tool_params.sensor_to_opensim = SimTK::Rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
-                                                       sensor_to_opensim_x,
-                                                       SimTK::XAxis,
-                                                       sensor_to_opensim_y,
-                                                       SimTK::YAxis,
-                                                       sensor_to_opensim_z,
-                                                       SimTK::ZAxis);
+  getParam("sensor_to_opensim_rotation_x", sensor_to_opensim_x);
+  getParam("sensor_to_opensim_rotation_y", sensor_to_opensim_y);
+  getParam("sensor_to_opensim_rotation_z", sensor_to_opensim_z);
+  ik_tool_params_.sensor_to_opensim =
+      SimTK::Rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                      sensor_to_opensim_x, SimTK::XAxis, sensor_to_opensim_y,
+                      SimTK::YAxis, sensor_to_opensim_z, SimTK::ZAxis);
 
-  m_ik_tool_params.use_marker_positions = m_general_params.use_marker_positions;
-  m_ik_tool_params.use_link_orientations = m_general_params.use_link_orientations;
+  ik_tool_params_.use_marker_positions = general_params_.use_marker_positions;
+  ik_tool_params_.use_link_orientations = general_params_.use_link_orientations;
 }
 
-void hiros::opensim_ik::IKSolver::setupRos()
-{
-  ROS_DEBUG_STREAM("OpenSim IK Solver... Setting up ROS topics");
+void hiros::opensim_ik::IKSolver::setupRosTopics() {
+  sub_ = create_subscription<hiros_skeleton_msgs::msg::SkeletonGroup>(
+      general_params_.input_topic, 10,
+      std::bind(&IKSolver::callback, this, std::placeholders::_1));
+}
 
-  m_orientations_sub = m_nh.subscribe(m_general_params.input_topic, 10, &IKSolver::callback, this);
-  while (m_orientations_sub.getNumPublishers() == 0 && !ros::isShuttingDown()) {
-    ROS_WARN_STREAM_DELAYED_THROTTLE(10, "OpenSim IK Solver... No input messages on " << m_general_params.input_topic);
+void hiros::opensim_ik::IKSolver::initializeIMUPlacer() {
+  if (general_params_.model_calibration) {
+    rt_imu_placer_ = std::make_unique<hiros::opensim_ik::RTIMUPlacer>(
+        model_, imu_placer_params_);
   }
 }
 
-void hiros::opensim_ik::IKSolver::initializeIMUPlacer()
-{
-  if (m_general_params.model_calibration) {
-    m_rt_imu_placer = std::make_unique<hiros::opensim_ik::RTIMUPlacer>(m_model, m_imu_placer_params);
-  }
-}
-
-void hiros::opensim_ik::IKSolver::initializeThreads()
-{
-  for (int i = 0; i < m_general_params.n_threads; ++i) {
+void hiros::opensim_ik::IKSolver::initializeThreads() {
+  for (int i = 0; i < general_params_.n_threads; ++i) {
     std::thread consumer(&hiros::opensim_ik::IKSolver::startConsumer, this);
     consumer.detach();
   }
@@ -138,69 +143,70 @@ void hiros::opensim_ik::IKSolver::initializeThreads()
   publisher.detach();
 }
 
-bool hiros::opensim_ik::IKSolver::calibrateIMUs(const hiros_skeleton_msgs::SkeletonGroup& t_msg)
-{
-  if (m_general_params.model_calibration) {
-    ROS_INFO_STREAM("OpenSim IK Solver... Calibrating IMUs on model");
-
+bool hiros::opensim_ik::IKSolver::calibrateIMUs(
+    const hiros_skeleton_msgs::msg::SkeletonGroup& msg) {
+  if (general_params_.model_calibration) {
     auto quat_table =
-      utils::toQuaternionsTable(t_msg, utils::getOrientationNames(m_model), m_ik_tool_params.sensor_to_opensim);
+        utils::toQuaternionsTable(msg, utils::getOrientationNames(model_),
+                                  ik_tool_params_.sensor_to_opensim);
 
     if (utils::isNaN(quat_table)) {
       return false;
     }
 
     auto markers_ref =
-      m_imu_placer_params.use_marker_based_ik_as_initial_pose
-        ? utils::toMarkersReference(t_msg, utils::getMarkerNames(m_model), m_ik_tool_params.sensor_to_opensim)
-        : OpenSim::MarkersReference();
-    m_rt_imu_placer->runCalibration(quat_table, markers_ref);
+        imu_placer_params_.use_marker_based_ik_as_initial_pose
+            ? utils::toMarkersReference(msg, utils::getMarkerNames(model_),
+                                        ik_tool_params_.sensor_to_opensim)
+            : OpenSim::MarkersReference();
+    rt_imu_placer_->runCalibration(quat_table, markers_ref);
 
-    m_model = m_rt_imu_placer->getCalibratedModel();
-    m_model.finalizeFromProperties();
+    model_ = rt_imu_placer_->getCalibratedModel();
+    model_.finalizeFromProperties();  // TODO: might be useless
 
-    if (m_imu_placer_params.save_calibrated_model) {
-      m_rt_imu_placer->saveModel();
+    if (imu_placer_params_.save_calibrated_model) {
+      rt_imu_placer_->saveModel();
     }
 
-    ROS_INFO_STREAM(BASH_MSG_GREEN << "OpenSim IK Solver... CALIBRATED" << BASH_MSG_RESET);
+    RCLCPP_INFO_STREAM(
+        get_logger(), BASH_MSG_GREEN << "Hi-ROS OpenSim IK Solver... CALIBRATED"
+                                     << BASH_MSG_RESET);
   }
 
   return true;
 }
 
-void hiros::opensim_ik::IKSolver::startConsumer()
-{
-  Consumer c{SkelGroupToPubDataQueuePtr(&m_queue), m_model, m_ik_tool_params};
+void hiros::opensim_ik::IKSolver::startConsumer() {
+  Consumer c{SkelGroupToPubDataQueuePtr(&queue_), model_, ik_tool_params_};
 
-  while (ros::ok()) {
+  while (rclcpp::ok()) {
     c.runSingleFrameIK();
   }
 }
 
-void hiros::opensim_ik::IKSolver::startPublisher()
-{
-  Publisher p{SkelGroupToPubDataQueuePtr(&m_queue), m_nh, m_general_params};
+void hiros::opensim_ik::IKSolver::startPublisher() {
+  Publisher p{SkelGroupToPubDataQueuePtr(&queue_), shared_from_this(),
+              general_params_};
 
-  while (ros::ok()) {
+  while (rclcpp::ok()) {
     p.publish();
   }
 }
 
-void hiros::opensim_ik::IKSolver::callback(const hiros_skeleton_msgs::SkeletonGroup& t_msg)
-{
-  if (!m_initialized) {
-    if (m_general_params.model_calibration) {
-      if (!calibrateIMUs(t_msg)) {
+void hiros::opensim_ik::IKSolver::callback(
+    const hiros_skeleton_msgs::msg::SkeletonGroup& msg) {
+  if (!initialized_) {
+    if (general_params_.model_calibration) {
+      if (!calibrateIMUs(msg)) {
         return;
       }
-      m_ik_tool_params.heading_rot_vec = m_rt_imu_placer->getHeadingRotVec();
+      ik_tool_params_.heading_rot_vec = rt_imu_placer_->getHeadingRotVec();
     }
 
     initializeThreads();
 
-    m_initialized = true;
+    initialized_ = true;
   }
 
-  m_queue.push(t_msg);
+  queue_.push(msg);
 }

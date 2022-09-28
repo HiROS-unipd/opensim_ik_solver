@@ -10,68 +10,71 @@
 #include "opensim_ik_solver/utils.h"
 
 namespace hiros {
-  namespace opensim_ik {
+namespace opensim_ik {
 
-    class RTIMUPlacer
-    {
-    public:
-      RTIMUPlacer(const IMUPlacerParameters& t_params);
-      RTIMUPlacer(const OpenSim::Model& t_model, const IMUPlacerParameters& t_params);
+class RTIMUPlacer {
+ public:
+  RTIMUPlacer(const IMUPlacerParameters& params);
+  RTIMUPlacer(const OpenSim::Model& model, const IMUPlacerParameters& params);
 
-      virtual ~RTIMUPlacer();
+  virtual ~RTIMUPlacer();
 
-      void setModel(const OpenSim::Model& t_model);
-      void initializeHeadingCorrection();
-      void enableVisualizer();
-      void disableVisualizer();
+  void setModel(const OpenSim::Model& model);
+  void initializeHeadingCorrection();
+  void enableVisualizer();
+  void disableVisualizer();
 
-      inline SimTK::Vec3 getHeadingRotVec() const { return m_heading_rot_vec; }
+  inline SimTK::Vec3 getHeadingRotVec() const { return heading_rot_vec_; }
 
-      bool runCalibration(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table,
-                          const OpenSim::MarkersReference& t_markers_reference = {});
+  bool runCalibration(
+      const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& orientations_table,
+      const OpenSim::MarkersReference& markers_reference = {});
 
-      OpenSim::Model& getCalibratedModel() const;
-      void saveModel(const std::string& t_calibrated_model_path);
-      void saveModel();
+  OpenSim::Model& getCalibratedModel() const;
+  void saveModel(const std::string& calibrated_model_path);
+  void saveModel();
 
-    private:
-      void setDirectionOnImu();
+ private:
+  void setDirectionOnImu();
 
-      void updateOrientationsTable(const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& t_orientations_table);
-      void updateMarkersReference(const OpenSim::MarkersReference& t_markers_reference);
-      bool runCalibration();
+  void updateOrientationsTable(
+      const OpenSim::TimeSeriesTable_<SimTK::Quaternion>& orientations_table);
+  void updateMarkersReference(
+      const OpenSim::MarkersReference& markers_reference);
+  bool runCalibration();
 
-      void initialize();
-      bool applyHeadingCorrection();
-      void computeTransforms();
-      void computeOffsets();
-      void visualizeCalibratedModel();
+  void initialize();
+  bool applyHeadingCorrection();
+  void computeTransforms();
+  void computeOffsets();
+  void visualizeCalibratedModel();
 
-      bool m_initialized;
-      bool m_calibrated;
+  bool initialized_{false};
+  bool calibrated_{false};
 
-      IMUPlacerParameters m_params;
+  IMUPlacerParameters params_{};
 
-      SimTK::CoordinateDirection m_direction_on_imu;
-      std::vector<std::string> m_imu_labels;
-      std::vector<double> m_times;
-      SimTK::RowVector_<SimTK::Rotation> m_rotations;
-      std::vector<OpenSim::Body*> m_bodies;
-      std::map<std::string, SimTK::Rotation> m_imu_bodies_in_ground;
+  SimTK::CoordinateDirection direction_on_imu_{SimTK::ZAxis};
+  std::vector<std::string> imu_labels_{};
+  std::vector<double> times_{};
+  SimTK::RowVector_<SimTK::Rotation> rotations_{};
+  std::vector<OpenSim::Body*> bodies_{};
+  std::map<std::string, SimTK::Rotation> imu_bodies_in_ground_{};
 
-      std::unique_ptr<OpenSim::MarkersReference> m_markers_reference;
-      std::unique_ptr<OpenSim::TimeSeriesTable_<SimTK::Quaternion>> m_orientations_table;
-      OpenSim::TimeSeriesTable_<SimTK::Rotation> m_orientations_data;
+  std::unique_ptr<OpenSim::MarkersReference> markers_reference_{};
+  std::unique_ptr<OpenSim::TimeSeriesTable_<SimTK::Quaternion>>
+      orientations_table_{};
+  OpenSim::TimeSeriesTable_<SimTK::Rotation> orientations_data_{};
 
-      std::unique_ptr<hiros::opensim_ik::RTIKTool> m_rt_ik_tool;
+  std::unique_ptr<hiros::opensim_ik::RTIKTool> rt_ik_tool_{};
 
-      SimTK::Vec3 m_heading_rot_vec;
+  SimTK::Vec3 heading_rot_vec_{};
 
-      std::unique_ptr<SimTK::State> m_state;
-      std::unique_ptr<OpenSim::Model> m_model;
-    };
+  std::unique_ptr<SimTK::State> state_{};
+  std::unique_ptr<OpenSim::Model> model_{};
+};
 
-  } // namespace opensim_ik
-} // namespace hiros
+}  // namespace opensim_ik
+}  // namespace hiros
 
 #endif
