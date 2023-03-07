@@ -107,34 +107,9 @@ void hiros::opensim_ik::Consumer::fillSkeletonGroup() {
                  {p, v, a}});
   }
 
-  int lk_id = -1;
-  s.addLink({++lk_id, "", 0, 1});
-  s.addLink({++lk_id, "", 2, 3});
-  s.addLink({++lk_id, "", 3, 4});
-  s.addLink({++lk_id, "", 4, 5});
-  s.addLink({++lk_id, "", 5, 6});
-  s.addLink({++lk_id, "", 6, 7});
-  s.addLink({++lk_id, "", 7, 8});
-  s.addLink({++lk_id, "", 9, 10});
-  s.addLink({++lk_id, "", 10, 11});
-  s.addLink({++lk_id, "", 11, 12});
-  s.addLink({++lk_id, "", 12, 13});
-  s.addLink({++lk_id, "", 13, 14});
-  s.addLink({++lk_id, "", 14, 15});
-  s.addLink({++lk_id, "", 1, 24});
-  s.addLink({++lk_id, "", 24, 25});
-  s.addLink({++lk_id, "", 24, 26});
-  s.addLink({++lk_id, "", 24, 28});
-  s.addLink({++lk_id, "", 26, 27});
-  s.addLink({++lk_id, "", 28, 29});
-  s.addLink({++lk_id, "", 0, 16});
-  s.addLink({++lk_id, "", 16, 17});
-  s.addLink({++lk_id, "", 17, 18});
-  s.addLink({++lk_id, "", 18, 19});
-  s.addLink({++lk_id, "", 0, 20});
-  s.addLink({++lk_id, "", 20, 21});
-  s.addLink({++lk_id, "", 21, 22});
-  s.addLink({++lk_id, "", 22, 23});
+  for (const auto& link : params_.links_info) {
+    s.addLink({link.id, link.name, link.parent_joint_id, link.child_joint_id});
+  }
 
   //  // Retain link parent and child markers information, just for
   //  visualization purposes for (const auto& lk :

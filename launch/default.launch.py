@@ -6,6 +6,12 @@ from launch_ros.actions import Node
 def generate_launch_description():
     ld = LaunchDescription()
 
+    links_cfg = os.path.join(
+            get_package_share_directory('hiros_opensim_ik_solver'),
+            'config',
+            'links_config.yaml'
+    )
+
     node=Node(
         package = 'hiros_opensim_ik_solver',
         executable = 'hiros_opensim_ik_solver',
@@ -40,6 +46,7 @@ def generate_launch_description():
             {"sensor_to_opensim_rotation_y": 0.},
             {"sensor_to_opensim_rotation_z": 0.},
             {"visualize_ik": False},
+            links_cfg,
         ]
     )
 

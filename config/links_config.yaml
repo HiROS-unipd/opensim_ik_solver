@@ -1,0 +1,198 @@
+/**:
+  ros__parameters:
+    links: ["l00", "l01", "l02", "l03", "l04", "l05", "l06", "l07", "l08", "l09",
+            "l10", "l11", "l12", "l13", "l14", "l15", "l16", "l17", "l18", "l19",
+            "l20", "l21", "l22", "l23", "l24", "l25", "l26", "l27", "l28", "l29",
+            "l30", "l31"]
+    l00:
+      id: 0
+      name: l00
+      parent_joint_id: -1 # world
+      child_joint_id: 0 # K4ABT_JOINT_PELVIS
+      has_orientation: false
+    l01:
+      id: 1
+      name: l01
+      parent_joint_id: 0 # K4ABT_JOINT_PELVIS
+      child_joint_id: 1 # K4ABT_JOINT_SPINE_NAVEL
+      has_orientation: true
+    l02:
+      id: 2
+      name: l02
+      parent_joint_id: 1 # K4ABT_JOINT_SPINE_NAVEL
+      child_joint_id: 2 # K4ABT_JOINT_SPINE_CHEST
+      has_orientation: true
+    l03:
+      id: 3
+      name: l03
+      parent_joint_id: 2 # K4ABT_JOINT_SPINE_CHEST
+      child_joint_id: 3 # K4ABT_JOINT_NECK
+      has_orientation: true
+    l04:
+      id: 4
+      name: l04
+      parent_joint_id: 2 # K4ABT_JOINT_SPINE_CHEST
+      child_joint_id: 4 # K4ABT_JOINT_CLAVICLE_LEFT
+      has_orientation: false
+    l05:
+      id: 5
+      name: l05
+      parent_joint_id: 4 # K4ABT_JOINT_CLAVICLE_LEFT
+      child_joint_id: 5 # K4ABT_JOINT_SHOULDER_LEFT
+      has_orientation: true
+    l06:
+      id: 6
+      name: l06
+      parent_joint_id: 5 # K4ABT_JOINT_SHOULDER_LEFT
+      child_joint_id: 6 # K4ABT_JOINT_ELBOW_LEFT
+      has_orientation: true
+    l07:
+      id: 7
+      name: l07
+      parent_joint_id: 6 # K4ABT_JOINT_ELBOW_LEFT
+      child_joint_id: 7 # K4ABT_JOINT_WRIST_LEFT
+      has_orientation: true
+    l08:
+      id: 8
+      name: l08
+      parent_joint_id: 7 # K4ABT_JOINT_WRIST_LEFT
+      child_joint_id: 8 # K4ABT_JOINT_HAND_LEFT
+      has_orientation: true
+    l09:
+      id: 9
+      name: l09
+      parent_joint_id: 8 # K4ABT_JOINT_HAND_LEFT
+      child_joint_id: 9 # K4ABT_JOINT_HANDTIP_LEFT
+      has_orientation: true
+    l10:
+      id: 10
+      name: l10
+      parent_joint_id: 7 # K4ABT_JOINT_WRIST_LEFT
+      child_joint_id: 10 # K4ABT_JOINT_THUMB_LEFT
+      has_orientation: false
+    l11:
+      id: 11
+      name: l11
+      parent_joint_id: 2 # K4ABT_JOINT_SPINE_CHEST
+      child_joint_id: 11 # K4ABT_JOINT_CLAVICLE_RIGHT
+      has_orientation: false
+    l12:
+      id: 12
+      name: l12
+      parent_joint_id: 11 # K4ABT_JOINT_CLAVICLE_RIGHT
+      child_joint_id: 12 # K4ABT_JOINT_SHOULDER_RIGHT
+      has_orientation: true
+    l13:
+      id: 13
+      name: l13
+      parent_joint_id: 12 # K4ABT_JOINT_SHOULDER_RIGHT
+      child_joint_id: 13 # K4ABT_JOINT_ELBOW_RIGHT
+      has_orientation: true
+    l14:
+      id: 14
+      name: l14
+      parent_joint_id: 13 # K4ABT_JOINT_ELBOW_RIGHT
+      child_joint_id: 14 # K4ABT_JOINT_WRIST_RIGHT
+      has_orientation: true
+    l15:
+      id: 15
+      name: l15
+      parent_joint_id: 14 # K4ABT_JOINT_WRIST_RIGHT
+      child_joint_id: 15 # K4ABT_JOINT_HAND_RIGHT
+      has_orientation: true
+    l16:
+      id: 16
+      name: l16
+      parent_joint_id: 15 # K4ABT_JOINT_HAND_RIGHT
+      child_joint_id: 16 # K4ABT_JOINT_HANDTIP_RIGHT
+      has_orientation: true
+    l17:
+      id: 17
+      name: l17
+      parent_joint_id: 14 # K4ABT_JOINT_WRIST_RIGHT
+      child_joint_id: 17 # K4ABT_JOINT_THUMB_RIGHT
+      has_orientation: false
+    l18:
+      id: 18
+      name: l18
+      parent_joint_id: 0 # K4ABT_JOINT_PELVIS
+      child_joint_id: 18 # K4ABT_JOINT_HIP_LEFT
+      has_orientation: true
+    l19:
+      id: 19
+      name: l19
+      parent_joint_id: 18 # K4ABT_JOINT_HIP_LEFT
+      child_joint_id: 19 # K4ABT_JOINT_KNEE_LEFT
+      has_orientation: true
+    l20:
+      id: 20
+      name: l20
+      parent_joint_id: 19 # K4ABT_JOINT_KNEE_LEFT
+      child_joint_id: 20 # K4ABT_JOINT_ANKLE_LEFT
+      has_orientation: true
+    l21:
+      id: 21
+      name: l21
+      parent_joint_id: 20 # K4ABT_JOINT_ANKLE_LEFT
+      child_joint_id: 21 # K4ABT_JOINT_FOOT_LEFT
+      has_orientation: true
+    l22:
+      id: 22
+      name: l22
+      parent_joint_id: 0 # K4ABT_JOINT_PELVIS
+      child_joint_id: 22 # K4ABT_JOINT_HIP_RIGHT
+      has_orientation: true
+    l23:
+      id: 23
+      name: l23
+      parent_joint_id: 22 # K4ABT_JOINT_HIP_RIGHT
+      child_joint_id: 23 # K4ABT_JOINT_KNEE_RIGHT
+      has_orientation: true
+    l24:
+      id: 24
+      name: l24
+      parent_joint_id: 23 # K4ABT_JOINT_KNEE_RIGHT
+      child_joint_id: 24 # K4ABT_JOINT_ANKLE_RIGHT
+      has_orientation: true
+    l25:
+      id: 25
+      name: l25
+      parent_joint_id: 24 # K4ABT_JOINT_ANKLE_RIGHT
+      child_joint_id: 25 # K4ABT_JOINT_FOOT_RIGHT
+      has_orientation: true
+    l26:
+      id: 26
+      name: l26
+      parent_joint_id: 3 # K4ABT_JOINT_NECK
+      child_joint_id: 26 # K4ABT_JOINT_HEAD
+      has_orientation: true
+    l27:
+      id: 27
+      name: l27
+      parent_joint_id: 26 # K4ABT_JOINT_HEAD
+      child_joint_id: 27 # K4ABT_JOINT_NOSE
+      has_orientation: false
+    l28:
+      id: 28
+      name: l28
+      parent_joint_id: 26 # K4ABT_JOINT_HEAD
+      child_joint_id: 28 # K4ABT_JOINT_EYE_LEFT
+      has_orientation: false
+    l29:
+      id: 29
+      name: l29
+      parent_joint_id: 26 # K4ABT_JOINT_HEAD
+      child_joint_id: 29 # K4ABT_JOINT_EAR_LEFT
+      has_orientation: false
+    l30:
+      id: 30
+      name: l30
+      parent_joint_id: 26 # K4ABT_JOINT_HEAD
+      child_joint_id: 30 # K4ABT_JOINT_EYE_RIGHT
+      has_orientation: false
+    l31:
+      id: 31
+      name: l31
+      parent_joint_id: 26 # K4ABT_JOINT_HEAD
+      child_joint_id: 31 # K4ABT_JOINT_EAR_RIGHT
+      has_orientation: false

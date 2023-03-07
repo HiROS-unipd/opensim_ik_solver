@@ -118,6 +118,24 @@ void hiros::opensim_ik::IKSolver::getParams() {
 
   ik_tool_params_.use_marker_positions = general_params_.use_marker_positions;
   ik_tool_params_.use_link_orientations = general_params_.use_link_orientations;
+
+  parseLinksConfig();
+}
+
+void hiros::opensim_ik::IKSolver::parseLinksConfig() {
+  std::vector<std::string> links{};
+  if (!getParam("links", links)) {
+    return;
+  }
+
+  LinkInfo li{};
+  for (const auto& link : links) {
+    getParam(link + ".id", li.id);
+    getParam(link + ".name", li.name);
+    getParam(link + ".parent_joint_id", li.parent_joint_id);
+    getParam(link + ".child_joint_id", li.child_joint_id);
+    ik_tool_params_.links_info.push_back(li);
+  }
 }
 
 void hiros::opensim_ik::IKSolver::setupRosTopics() {

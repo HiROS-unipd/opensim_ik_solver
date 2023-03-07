@@ -38,6 +38,7 @@ class IKSolver : public rclcpp::Node {
   void configure();
 
   void getParams();
+  void parseLinksConfig();
   void setupRosTopics();
   void initializeIMUPlacer();
   void initializeThreads();

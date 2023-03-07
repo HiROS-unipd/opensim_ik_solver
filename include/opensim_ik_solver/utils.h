@@ -13,6 +13,13 @@
 namespace hiros {
 namespace opensim_ik {
 
+struct LinkInfo {
+  int id{-1};
+  std::string name{};
+  int parent_joint_id{-1};
+  int child_joint_id{-1};
+};
+
 struct GeneralParameters {
   int n_threads{1};
 
@@ -53,6 +60,8 @@ struct IKToolParameters {
   SimTK::Vec3 heading_rot_vec{0, 0, 0};
 
   bool use_visualizer{false};
+
+  std::vector<LinkInfo> links_info{};
 };
 
 namespace utils {
