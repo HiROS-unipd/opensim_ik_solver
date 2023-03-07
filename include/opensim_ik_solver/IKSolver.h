@@ -29,7 +29,7 @@ class IKSolver : public rclcpp::Node {
  private:
   template <typename T>
   bool getParam(const std::string& name, T& parameter) {
-    declare_parameter<T>(name);
+    declare_parameter<T>(name, parameter);
     return get_parameter(name, parameter);
   }
 
