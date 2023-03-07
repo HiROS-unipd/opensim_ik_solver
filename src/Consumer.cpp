@@ -51,7 +51,7 @@ void hiros::opensim_ik::Consumer::runIK() {
 
 void hiros::opensim_ik::Consumer::fillJointAngles() {
   pub_data_->joint_angles.header.stamp =
-      rclcpp::Time(static_cast<long>(rt_ik_tool_->getState().getTime() * 1e9));
+      rclcpp::Time{static_cast<long>(rt_ik_tool_->getState().getTime() * 1e9)};
   pub_data_->joint_angles.name = rt_ik_tool_->getJointAngleNames();
   pub_data_->joint_angles.position = rt_ik_tool_->getJointAngleValues(true);
 }
@@ -63,16 +63,14 @@ void hiros::opensim_ik::Consumer::fillSkeletonGroup() {
   auto accelerations = rt_ik_tool_->getMarkerAccelerations();
 
   pub_data_->skeleton_group.header.stamp =
-      rclcpp::Time(std::chrono::system_clock::now()
-                       .time_since_epoch()
-                       .count());  // TODO: ROS2 check
+      rclcpp::Time{std::chrono::system_clock::now().time_since_epoch().count()};
   pub_data_->skeleton_group.header.frame_id = skeleton_group_->header.frame_id;
 
   hiros::skeletons::types::Skeleton s(
       skeleton_group_->skeletons.front().id +
           1000,  // TODO: just to have a different skeleton's color for
                  // debugging
-      rclcpp::Time(skeleton_group_->skeletons.front().src_time).seconds(),
+      rclcpp::Time{skeleton_group_->skeletons.front().src_time}.seconds(),
       skeleton_group_->skeletons.front().src_frame,
       static_cast<unsigned int>(names.size()));
 

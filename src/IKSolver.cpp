@@ -16,15 +16,13 @@ hiros::opensim_ik::IKSolver::~IKSolver() { stop(); }
 void hiros::opensim_ik::IKSolver::start() {
   configure();
 
-  RCLCPP_INFO_STREAM(get_logger(), BASH_MSG_GREEN
-                                       << "Hi-ROS OpenSim IK Solver... RUNNING"
-                                       << BASH_MSG_RESET);
+  RCLCPP_INFO_STREAM(get_logger(),
+                     BASH_MSG_GREEN << "Running" << BASH_MSG_RESET);
 }
 
 void hiros::opensim_ik::IKSolver::stop() const {
-  RCLCPP_INFO_STREAM(get_logger(), BASH_MSG_GREEN
-                                       << "Hi-ROS OpenSim IK Solver... STOPPED"
-                                       << BASH_MSG_RESET);
+  RCLCPP_INFO_STREAM(get_logger(),
+                     BASH_MSG_GREEN << "Stopped" << BASH_MSG_RESET);
 
   rclcpp::shutdown();
 }
@@ -52,16 +50,15 @@ void hiros::opensim_ik::IKSolver::getParams() {
       !general_params_.use_link_orientations) {
     RCLCPP_FATAL_STREAM(
         get_logger(),
-        "Hi-ROS OpenSim IK Solver Error: Either 'use_marker_positions' or "
-        "'use_link_orientations' must be set to 'true'. Closing");
+        "Either 'use_marker_positions' or 'use_link_orientations' must be set "
+        "to 'true'. Closing");
     stop();
     exit(EXIT_FAILURE);
   }
 
   if (general_params_.model_path.empty()) {
     RCLCPP_FATAL_STREAM(get_logger(),
-                        "Hi-ROS OpenSim IK Solver Error: Either 'model_path' "
-                        "is required. Closing");
+                        "Non-empty 'model_path' is required. Closing");
     stop();
     exit(EXIT_FAILURE);
   }
@@ -70,10 +67,9 @@ void hiros::opensim_ik::IKSolver::getParams() {
   // IMU Placer Parameters
   if (general_params_.model_calibration) {
     if (!general_params_.use_link_orientations) {
-      RCLCPP_WARN_STREAM(
-          get_logger(),
-          "Hi-ROS OpenSim IK Solver Warning: Model calibration requires "
-          "'use_link_orientations' to be 'true'. Skipping");
+      RCLCPP_WARN_STREAM(get_logger(),
+                         "Model calibration requires 'use_link_orientations' "
+                         "to be 'true'. Skipping");
 
       general_params_.model_calibration = false;
     } else {
@@ -186,9 +182,8 @@ bool hiros::opensim_ik::IKSolver::calibrateIMUs(
       rt_imu_placer_->saveModel();
     }
 
-    RCLCPP_INFO_STREAM(
-        get_logger(), BASH_MSG_GREEN << "Hi-ROS OpenSim IK Solver... CALIBRATED"
-                                     << BASH_MSG_RESET);
+    RCLCPP_INFO_STREAM(get_logger(),
+                       BASH_MSG_GREEN << "Calibrated" << BASH_MSG_RESET);
   }
 
   return true;

@@ -43,7 +43,7 @@ OpenSim::TimeSeriesTable_<SimTK::Vec3> hiros::opensim_ik::utils::toVec3Table(
   unsigned long n_cols = marker_names.size();
 
   std::vector<double> time{
-      rclcpp::Time(msg.skeletons.front().src_time).seconds()};
+      rclcpp::Time{msg.skeletons.front().src_time}.seconds()};
 
   SimTK::Matrix_<SimTK::Vec3> vec3_matrix(1, static_cast<int>(n_cols),
                                           SimTK::Vec3());
@@ -126,7 +126,7 @@ hiros::opensim_ik::utils::toQuaternionsTable(
   unsigned long n_cols = orientation_names.size();
 
   std::vector<double> time{
-      rclcpp::Time(msg.skeletons.front().src_time).seconds()};
+      rclcpp::Time{msg.skeletons.front().src_time}.seconds()};
 
   SimTK::Matrix_<SimTK::Quaternion> quaternion_matrix(
       1, static_cast<int>(n_cols), SimTK::Quaternion());
@@ -182,7 +182,7 @@ hiros::opensim_ik::utils::toRotationsTable(
   unsigned long n_cols = orientation_names.size();
 
   std::vector<double> time{
-      rclcpp::Time(msg.skeletons.front().src_time).seconds()};
+      rclcpp::Time{msg.skeletons.front().src_time}.seconds()};
 
   SimTK::Rotation heading_rotation(
       SimTK::BodyOrSpaceType::SpaceRotationSequence, heading_rot_vec[0],

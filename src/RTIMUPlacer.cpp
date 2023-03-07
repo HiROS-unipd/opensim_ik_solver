@@ -128,7 +128,7 @@ void hiros::opensim_ik::RTIMUPlacer::updateOrientationsTable(
 
 bool hiros::opensim_ik::RTIMUPlacer::runCalibration() {
   if (orientations_table_->getIndependentColumn().empty()) {
-    std::cout
+    std::cerr
         << "RTIMUPlacer... Warning: The orientation table is empty. Skipping."
         << std::endl;
     return false;
@@ -217,7 +217,7 @@ bool hiros::opensim_ik::RTIMUPlacer::applyHeadingCorrection() {
 
     return true;
   } catch (const OpenSim::Exception& ex) {
-    std::cout << "RTIMUPlacer... Warning: IMU '" << params_.base_imu_label
+    std::cerr << "RTIMUPlacer... Warning: IMU '" << params_.base_imu_label
               << "' not found for heading correction. Skipping." << std::endl;
 
     return false;
