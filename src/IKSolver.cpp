@@ -190,7 +190,7 @@ bool hiros::opensim_ik::IKSolver::calibrateIMUs(
 }
 
 void hiros::opensim_ik::IKSolver::startConsumer() {
-  Consumer c{SkelGroupToPubDataQueuePtr(&queue_), model_, ik_tool_params_};
+  Consumer c{queue_ptr_, model_, ik_tool_params_};
 
   while (rclcpp::ok()) {
     c.runSingleFrameIK();
@@ -198,8 +198,7 @@ void hiros::opensim_ik::IKSolver::startConsumer() {
 }
 
 void hiros::opensim_ik::IKSolver::startPublisher() {
-  Publisher p{SkelGroupToPubDataQueuePtr(&queue_), shared_from_this(),
-              general_params_};
+  Publisher p{queue_ptr_, shared_from_this(), general_params_};
 
   while (rclcpp::ok()) {
     p.publish();
@@ -221,5 +220,5 @@ void hiros::opensim_ik::IKSolver::callback(
     initialized_ = true;
   }
 
-  queue_.push(msg);
+  queue_ptr_->push(msg);
 }

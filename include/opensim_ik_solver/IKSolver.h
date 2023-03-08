@@ -62,7 +62,8 @@ class IKSolver : public rclcpp::Node {
 
   bool initialized_{false};
 
-  SkelGroupToPubDataQueue queue_{};
+  SkelGroupToPubDataQueuePtr queue_ptr_{
+      std::make_shared<SkelGroupToPubDataQueue>()};
 };
 
 }  // namespace opensim_ik
