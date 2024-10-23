@@ -61,3 +61,25 @@ Skeleton's link names must correspond to the virtual IMUs defined in the model.
 ```
 ros2 launch hiros_opensim_ik_solver default.launch.py
 ```
+
+
+## Citation
+Please cite the following paper:
+```
+M. Guidolin, M. Vanuzzo, S. Michieletto and M. Reggiani, "Enhancing Real-Time Body Pose Estimation in Occluded Environments Through Multimodal Musculoskeletal Modeling," in IEEE Robotics and Automation Letters, vol. 9, no. 12, pp. 10748-10755.
+```
+
+Bib citation source:
+```bibtex
+@ARTICLE{10714023,
+  author={Guidolin, Mattia and Vanuzzo, Michael and Michieletto, Stefano and Reggiani, Monica},
+  journal={IEEE Robotics and Automation Letters}, 
+  title={Enhancing Real-Time Body Pose Estimation in Occluded Environments Through Multimodal Musculoskeletal Modeling}, 
+  year={2024},
+  volume={9},
+  number={12},
+  pages={10748-10755},
+  keywords={Real-time systems;Accuracy;Optimization;Biological system modeling;Pose estimation;Cameras;Robot sensing systems;Safety;Biomechanics;Tracking;Human detection and tracking;human-robot collaboration;multi-modal perception for HRI;RGB-D perception;sensor fusion},
+  doi={10.1109/LRA.2024.3478569}
+}
+```
